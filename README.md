@@ -1,4 +1,4 @@
-BROMOC Suite
+BROMOC Suite: Brownian Dynamics/Monte-Carlo Suite for Studies of Ion and DNA transport in Pores with Effective Potentials
 ************
 Monte-Carlo/Brownian Dynamics Suite for Studies of Ion Permeation and DNA transport in Biological and Artificial Pores with Effective Potentials
 
