@@ -8,9 +8,9 @@ e-mail: pablo.debiase@ucalgary.ca
 ---------------------------------------------------------------
 If you use this program please site us:
 
-BROMOC Suite: Monte-Carlo/Brownian Dynamics Suite for Studies of Ion Permeation and DNA transport in Biological and Artificial Pores with Effective Potentials
-Pablo M. De Biase*, Suren Markosyan and Sergei Noskov*
-J Comput Chem. 2014 Nov
+BROMOC suite: Monte Carlo/Brownian dynamics suite for studies of ion permeation and DNA transport in biological and artificial pores with effective potentials
+Pablo M. De Biase*, Suren Markosyan, and Sergei Noskov*
+J. Comput. Chem., 2014, published online: 15 DEC 2014, DOI: 10.1002/jcc.23799
 
 BROMOC-D: Brownian Dynamics/Monte-Carlo Program Suite to Study Ion and DNA Permeation in Nanopores
 Pablo M. De Biase, Carlos J. F. Solano, Suren Markosyan, Luke Czapla, and Sergei Yu. Noskov*
