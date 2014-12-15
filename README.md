@@ -1,10 +1,9 @@
 #BROMOC Suite
 ************
 *Monte-Carlo/Brownian Dynamics Suite for Studies of Ion Permeation and DNA transport in Biological and Artificial Pores with Effective Potentials*
-
-#####Author: Pablo M. De Biase
-#####e-mail: pablo.debiase@ucalgary.ca
-
+---------------------------------------------------------------
+######Author: Pablo M. De Biase
+######e-mail: pablo.debiase@ucalgary.ca
 ---------------------------------------------------------------
 If you use this program please site us:
 
