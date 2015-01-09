@@ -3,6 +3,9 @@ BROMOC (CG-GCMC-BD): ELECTRODIFFUSION, BROWNIAN DYNAMICS AND COARSE GRAIN MODEL 
 (c) 2010 C. J. F. Solano, University of Calgary
 (c) 2011 P. M. De Biase,  University of Calgary
 
+What's new in version 4.11 (2014.12.15) ?
+-New BROMOC Tool XS-SURF to compute cross-section surface of the inner pore with and without DNA
+
 What's new in version 4.10 (2014.10.14) ?
 -New feature to print static field and repulsion field in x,y,z,val format in an ASCII file
 

@@ -348,7 +348,7 @@ logical*1 ety
 
 ncyz = ncly2*nclz2
 ix=int((xi+tranx2-xbcen2)*idcel2)
-iy=int((yi+tranx2-xbcen2)*idcel2)
+iy=int((yi+trany2-ybcen2)*idcel2)
 mini=min(nclx2-1,ncly2-1)/2
 do k=0,nclz2-1
   l=0

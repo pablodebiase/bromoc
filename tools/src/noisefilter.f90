@@ -21,7 +21,7 @@ real*8 av,tol,dif,mx,mn
 integer*4 i,j,c,n,kode,t,ll,hl,d,m,narg,arg
 character filename*64,outfile*64,line*1024
 integer*4 u(1024),l(1024),nu
-logical ig0
+logical ig0,rtr
 
 call header
 arg=0
@@ -79,23 +79,31 @@ if (len_trim(line).eq.0) then
 else
   read(line,*) n
 endif
-write(*,'(A,F20.10,A$)') 'Tolerance [',tol,']: '
-call readarg('',narg,arg,line)
-if (len_trim(line).gt.0) then 
-  read(line,*) tol
-endif
-call readarg('Ignore null data points (y/n) [y]? ',narg,arg,line)
-if (line(1:1)=='n'.or.line(1:1)=='N') then
-  ig0=.false.
-else
-  ig0=.true.
+
+call readarg('Activate restrictions (y/n) [n]?: ',narg,arg,line)
+rtr=.false.
+line=trim(line)
+if (line(1:1).eq.'y'.or.line(1:1).eq.'Y') rtr=.true.
+
+if (rtr) then 
+  write(*,'(A,F20.10,A$)') 'Tolerance [',tol,']: '
+  call readarg('',narg,arg,line)
+  if (len_trim(line).gt.0) then 
+    read(line,*) tol
+  endif
+  call readarg('Ignore null data points (y/n) [y]? ',narg,arg,line)
+  if (line(1:1)=='n'.or.line(1:1)=='N') then
+    ig0=.false.
+  else
+    ig0=.true.
+  endif
 endif
 
 ! Convert to EVENs to the higher ODD neighbour
 n=2*int(n/2)+1
 ! Do my thing
 do i=1,t
-  if (ig0.and.col(i+(c-1)*t).le.tol) then
+  if (rtr.and.ig0.and.col(i+(c-1)*t).le.tol) then
     av=col(i+(c-1)*t)
   else
     ll=2*(i-1)+1
@@ -108,21 +116,23 @@ do i=1,t
       av=av+col(j+(c-1)*t)
     enddo
     av=av/d
-    dif=dabs(av-col(i+(c-1)*t))
-    do while (dif.gt.tol)
-      if (d.gt.3) then  
-        av=0
-        d=d-2
-        do j=i-(d-1)/2,i+(d-1)/2
-          av=av+col(j+(c-1)*t)
-        enddo
-        av=av/d
-        dif=dabs(av-col(i+(c-1)*t))
-      else
-        av=col(i+(c-1)*t)+dsign(tol,av-col(i+(c-1)*t))
-        dif=tol
-      endif
-    enddo
+    if (rtr) then
+      dif=dabs(av-col(i+(c-1)*t))
+      do while (dif.gt.tol)
+        if (d.gt.3) then  
+          av=0
+          d=d-2
+          do j=i-(d-1)/2,i+(d-1)/2
+            av=av+col(j+(c-1)*t)
+          enddo
+          av=av/d
+          dif=dabs(av-col(i+(c-1)*t))
+        else
+          av=col(i+(c-1)*t)+dsign(tol,av-col(i+(c-1)*t))
+          dif=tol
+        endif
+      enddo
+    endif
   endif
   ave(i)=av
 enddo
@@ -184,11 +194,11 @@ implicit none
 character prname*64,prver*32,prdesc*256,startdate*32,lastdate*32,author*64
 
 prname='NOISEFILTER'
-prver='version 2.1'
+prver='version 2.2'
 prdesc='Reduces noise from a given data set by averaging N contiguous points'
 author='Pablo M. De Biase (pablodebiase@gmail.com)'
-startdate='5 Feb 2008'
-lastdate='11 Jan 2014'
+startdate='05 Feb 2008'
+lastdate='03 Dec 2014'
 
 write(*,'(/A)') trim(prname)//'  '//trim(prver)
 write(*,'(A)') trim(prdesc)

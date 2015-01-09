@@ -1,4 +1,4 @@
-!    BTRREAD - Reads BROMOC Trajectory files
+!    BTRCOUNT - Reads BROMOC Trajectory files
 !    Copyright (C) 2014 Pablo M. De Biase (pablodebiase@gmail.com)
 !
 !    This program is free software: you can redistribute it and/or modify
@@ -220,7 +220,7 @@ character prname*64,prver*32,prdesc*256,startdate*32,lastdate*32,author*64
 
 prname='BTRCOUNT'
 prver='version 1.0'
-prdesc='Counts particles between to point at z-axis'
+prdesc='Counts particles between two points in z-axis'
 author='Pablo M. De Biase (pablodebiase@gmail.com)'
 startdate='23 May 2014'
 lastdate='23 May 2014'
