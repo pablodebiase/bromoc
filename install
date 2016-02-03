@@ -16,7 +16,11 @@ if [ "$1" == "intel" ]; then
   if [ ! -d bin ]; then 
     mkdir bin 
   fi
-  cd cg-gcmc-bd/src
+  cd cg-gcmc-bd
+  if [ ! -d bin ]; then
+    mkdir bin
+  fi
+  cd src
   make clean -f Makefile_intel
   make -f Makefile_intel
   make install -f Makefile_intel
@@ -27,7 +31,11 @@ if [ "$1" == "intel" ]; then
   echo  
   echo 'NOTE: If compiling using INTEL and you are getting unexpected termination or error like segmentation fault when running imc-macro-2. Try this:'
   echo 'KMP_STACKSIZE=2G imc-macro-par-2 < input > output '
-  cd imc-macro/src
+  cd imc-macro
+  if [ ! -d bin ]; then
+    mkdir bin
+  fi
+  cd src
   make clean -f Makefile_intel
   make -f Makefile_intel
   make install -f Makefile_intel
@@ -38,7 +46,11 @@ if [ "$1" == "intel" ]; then
   echo  
   echo 'Installing PB-PNP ...'
   echo  
-  cd pb-pnp/src
+  cd pb-pnp
+  if [ ! -d bin ]; then
+    mkdir bin
+  fi
+  cd src
   make clean -f Makefile_intel
   make -f Makefile_intel
   make install -f Makefile_intel
@@ -47,7 +59,11 @@ if [ "$1" == "intel" ]; then
   echo  
   echo 'Installing TOOLS ...'
   echo  
-  cd tools/src
+  cd tools
+  if [ ! -d bin ]; then
+    mkdir bin
+  fi
+  cd src
   ./makeall intel
   cd ../..
 else
@@ -57,7 +73,11 @@ else
   if [ ! -d bin ]; then
     mkdir bin
   fi
-  cd cg-gcmc-bd/src
+  cd cg-gcmc-bd
+  if [ ! -d bin ]; then
+    mkdir bin
+  fi
+  cd src
   make clean -f Makefile_gfortran
   make -f Makefile_gfortran
   make install -f Makefile_gfortran
@@ -66,7 +86,11 @@ else
   echo  
   echo 'Installing IMC-MACRO ...'
   echo  
-  cd imc-macro/src
+  cd imc-macro
+  if [ ! -d bin ]; then
+    mkdir bin
+  fi
+  cd src
   make clean -f Makefile_gfortran
   make -f Makefile_gfortran
   make install -f Makefile_gfortran
@@ -77,7 +101,11 @@ else
   echo  
   echo 'Installing PB-PNP ...'
   echo  
-  cd pb-pnp/src
+  cd pb-pnp
+  if [ ! -d bin ]; then
+    mkdir bin
+  fi
+  cd src
   make clean -f Makefile_gfortran
   make -f Makefile_gfortran
   make install -f Makefile_gfortran
@@ -86,7 +114,11 @@ else
   echo  
   echo 'Installing TOOLS ...'
   echo  
-  cd tools/src
+  cd tools
+  if [ ! -d bin ]; then
+    mkdir bin
+  fi
+  cd src
   ./makeall
   cd ../..
 fi
