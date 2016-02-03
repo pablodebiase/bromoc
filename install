@@ -13,6 +13,9 @@ if [ "$1" == "intel" ]; then
   echo  
   echo 'Installing BROMOC (CG-GCMC-BD) ...'
   echo  
+  if [ ! -d bin ]; then 
+    mkdir bin 
+  fi
   cd cg-gcmc-bd/src
   make clean -f Makefile_intel
   make -f Makefile_intel
