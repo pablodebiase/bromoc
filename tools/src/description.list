@@ -35,6 +35,8 @@ TRJ2TRJ            Save specified frames from a trajectory into a new one
 OLDBCO2NEWBCO      Converts Old BCO 3' DNA writting format into new format
 PDB2BCO            Converts PDB to BCO (BROMOC Coordinates)
 PDB2CRD            Converts PDB to CRD (CHARMM Coordinates)
+PBEQ2DX            Converts CHARMM PBEQ Binary Potential Map file format into DX (Data Explorerer) format
+PBEQ2VTK           Converts CHARMM PBEQ Binary Potential Map file format into VTK (Visualization Toolkit) format 
 PICKNUM            Generates Random Natural Numbers
 POTMAP-PBEQ-READ   Reads CHARMM PBEQ Potential Map
 RDF-BROMOC         Reads BROMOC CG-GCMCBD trajectory and computes RDF for spherical system (useful to get perfectly normalized RDF without periodic boundary conditions)

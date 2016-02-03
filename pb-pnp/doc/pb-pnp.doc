@@ -107,7 +107,7 @@ END
 
 [ion-type]         : ion type (should be defined in IONTYPE, see above)
 ctop         [0.0] : ionic concentration at the top of a grid box in Z [mol/L]
-ctop         [0.0] : ionic concentration at the bottom of a grid box in Z [mol/L]
+cbot         [0.0] : ionic concentration at the bottom of a grid box in Z [mol/L]
 
 example:
 

@@ -18,7 +18,7 @@ program pdb2crd
 implicit none
 ! pdb and crd
 real*8 :: w,e
-integer*4 ::  na,ires
+integer*4 ::  na,ires,pires
 character*4 :: typ,res,segid,resid,iatom
 real*8 :: rt(3)
 
@@ -66,6 +66,7 @@ else
 endif
 
 j=0
+k=1
 once = .true.
 read(1,'(A)',IOSTAT=kode) ln
 do while (kode.eq.0.or.kode.eq.64.and.once)
@@ -74,11 +75,19 @@ do while (kode.eq.0.or.kode.eq.64.and.once)
   elseif ((ln(1:4).eq.'ATOM'.or.ln(4:6).eq.'ATM').and.once) then
     j=j+1
     read (ln,'(6x,4(x,A4),4x,3F8.3,2F6.2,6x,A4)') iatom,typ,res,resid,rt(1),rt(2),rt(3),e,w,segid
-    read(resid,*) ires  
+    read(resid,*) ires 
+    resid=adjustl(resid)
+    typ=adjustl(typ)
+    if (j.gt.1) then
+      if (ires.ne.pires) then 
+        k=k+1
+      endif
+    endif
+    pires = ires
     if (exton) then 
-      write(2,'(I10,I10,2x,A4,6X,A4,4x,3F20.10,2X,A4,6X,A4,4x,F20.10)') j,ires,res,typ,(rt(i),i=1,3),segid,resid,w
+      write(2,'(I10,I10,2x,A4,6X,A4,4x,3F20.10,2X,A4,6X,A4,4x,F20.10)') j,k,res,typ,(rt(i),i=1,3),segid,resid,w
     else  
-      write(2,'(I5,I5,1x,A4,1X,A4,3F10.5,1X,A4,1X,A4,F10.5)') j,ires,res,typ,(rt(i),i=1,3),segid,resid,w
+      write(2,'(I5,I5,1x,A4,1X,A4,3F10.5,1X,A4,1X,A4,F10.5)') j,k,res,typ,(rt(i),i=1,3),segid,resid,w
     endif
   endif
   read(1,'(A)',IOSTAT=kode) ln

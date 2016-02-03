@@ -36,10 +36,10 @@ do while (arg.lt.narg)
     write(*,*) '-tsdm         True Standard Deviation of the sample-mean'
     write(*,*) '-ssd          Sample Standard Deviation'
     write(*,*) '-ssdm  -se    Sample Standard Deviation of the sample-mean (Standard Error)'
-    return
+    stop
   else if (line.eq.'-v') then
     call header()
-    return
+    stop
   endif
 enddo
 arg=0

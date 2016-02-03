@@ -35,7 +35,7 @@ integer*4 uni,uno,narg,fac,ifr,ffr,arg,a,b,exn,i
 real*8 nv(3,3),cv(3,3),ie(3,3),ev(3,3),r(3,3)
 real*4 rr(3,3)
 character bs*8
-logical*1 rotate,inpdcde,outdcde,dcde2dcd,dcd2dcde
+logical*1 rotate,inpdcde,outdcde,dcde2dcd,dcd2dcde,toend
 logical*1,allocatable :: except(:)
 
 bs=repeat(achar(8),len(bs))
@@ -93,8 +93,12 @@ ifr=1
 fac=1
 call readarg('Initial Frame [ 1 ]: ',narg,arg,line)
 if (len_trim(line).ne.0) read(line,*) ifr
-call readarg('Final Frame ['//int2chr(ffr)//']: ',narg,arg,line)
-if (len_trim(line).ne.0) read(line,*) ffr
+call readarg('Final Frame [ END ]: ',narg,arg,line)
+toend=.true.
+if (len_trim(line).gt.0) then
+   read(line,*) ffr
+   toend=.false.
+endif
 call readarg('Saving Frequency [ 1 ]: ',narg,arg,line)
 if (len_trim(line).ne.0) read(line,*) fac
 
@@ -136,8 +140,8 @@ call writedcdhead(dcdout,uno)
 write(*,'(/A,I8$)') 'Frame: ',nsc
 
 call readdcdbody(uni,inpdcde)
-do while(dcdopen.and.nsc.le.ffr)
-  if (nsc.ge.ifr.and.nsc.le.ffr.and.mod(nsc,fac).eq.0) then
+do while(dcdopen.and.(nsc.le.ffr.or.toend))
+  if (nsc.ge.ifr.and.(nsc.le.ffr.or.toend).and.mod(nsc,fac).eq.0) then
     if (dcde2dcd) then
       call buildnv(xtlabc12(1:9),nv)     ! build NV matrix for next step
       call getcharmmvectors(nv,cv)       ! convert NV matrix to CV (charmm vectors matrix)
@@ -345,6 +349,7 @@ if (icntrl(2).eq.0) charmm=.true.
 if (nstep.le.0) nstep=1
 if (nsavc.le.0) nsavc=1
 nsc = nstep/nsavc
+if (nsc.eq.0) nsc = nstep
 
 allocate (rc(3,na))
 write(*,'(A,I0)') 'Total number of frames: ',nsc
