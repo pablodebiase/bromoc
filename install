@@ -54,6 +54,9 @@ else
   echo  
   echo 'Installing BROMOC (CG-GCMC-BD) ...'
   echo  
+  if [ ! -d bin ]; then
+    mkdir bin
+  fi
   cd cg-gcmc-bd/src
   make clean -f Makefile_gfortran
   make -f Makefile_gfortran
