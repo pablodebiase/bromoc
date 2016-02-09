@@ -36,7 +36,7 @@ integer agfpn,snd,afrn,frgn
 integer, allocatable :: agfpl(:),grf(:,:),frg(:),frgg(:),pmd(:),pmdi(:,:),pmdf(:,:),sndi(:),sndf(:),afr(:),afri(:,:),afrf(:,:)
 character*4,allocatable :: rtc(:)
 logical dcdopen,depablo
-logical termon,charmm
+logical termon,charmm,nosolvh
 contains
   function inintv(vec)
   implicit none
@@ -243,7 +243,11 @@ do i=1,nion
   tion=tion+rtf(ions(i))-rti(ions(i))+1
 enddo
 allocate (csol(1:3,tion),csoli(nion),csolf(nion))
-  
+
+call readarg('Ignore H in Solvent for computation of centroid (y/n) [y] ? ',narg,arg,line)
+nosolvh=.true.
+if (line(1:1).eq.'n'.or.line(1:1).eq.'N') nosolvh=.false.
+
 if (dordf.or.docdf) then 
   write(*,'(A)') 'Relevant for normalization: '
   call readarg('Substract DNA volume to the periodic cell volume (y/n)? [n]: ',narg,arg,line)
@@ -1620,7 +1624,8 @@ end subroutine
 subroutine centsolvent()
 use comun
 implicit none
-integer i,j,k,c,d
+integer i,j,k,c,d,nx,l
+real*8,allocatable :: xxx(:,:)
 
 k=0
 do i=1,nion ! each solvent/ion type
@@ -1629,7 +1634,20 @@ do i=1,nion ! each solvent/ion type
     k=k+1
     c=atlsi(j)
     d=atlsf(j)
-    call centroid(rt(1:3,c:d),d-c+1,csol(1:3,k))
+    if (nosolvh) then
+      nx=d-c+1
+      allocate (xxx(1:3,1:nx))
+      nx=0
+      do l=c,d
+        if (typ(l)(1:1).ne.'H') then
+          nx=nx+1
+          xxx(1:3,nx:nx)=rt(1:3,l:l)
+        endif
+      enddo
+      call centroid(xxx(1:3,1:nx),nx,csol(1:3,k))
+    else
+      call centroid(rt(1:3,c:d),d-c+1,csol(1:3,k))
+    endif
   enddo
   csolf(i)=k
 enddo
