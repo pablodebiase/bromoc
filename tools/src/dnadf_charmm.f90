@@ -249,7 +249,7 @@ nosolvh=.true.
 if (line(1:1).eq.'n'.or.line(1:1).eq.'N') nosolvh=.false.
 
 if (dordf.or.docdf) then 
-  write(*,'(A)') 'Relevant for normalization: '
+  write(*,'(//A)') 'Relevant for normalization: '
   call readarg('Substract DNA volume to the periodic cell volume (y/n)? [n]: ',narg,arg,line)
   if (line(1:1).eq.'y'.or.line(1:1).eq.'Y') then
     cdv=.true.
@@ -1271,9 +1271,10 @@ endif
 !print *, '# of free atoms = ',nfree
 !print *, 'total # atom = ', natom,nstep,nsavc
 !nsc = nstep/nsavc
-
+if (icntrl(2).eq.0) icntrl(2)=1
+if (icntrl(3).eq.0) icntrl(3)=1
 allocate (rt(3,na))
-tnf=icntrl(4)/icntrl(3)
+tnf=icntrl(4)/icntrl(3)*icntrl(2)
 write(*,'(A,I0)') 'Total number of frames: ',tnf
 nsc=0
 end subroutine
