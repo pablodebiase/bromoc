@@ -1274,7 +1274,7 @@ endif
 if (icntrl(2).eq.0) icntrl(2)=1
 if (icntrl(3).eq.0) icntrl(3)=1
 allocate (rt(3,na))
-tnf=icntrl(4)/icntrl(3)*icntrl(2)
+tnf=icntrl(4)*icntrl(2)/icntrl(3)
 write(*,'(A,I0)') 'Total number of frames: ',tnf
 nsc=0
 end subroutine
