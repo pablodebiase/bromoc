@@ -1645,6 +1645,7 @@ do i=1,nion ! each solvent/ion type
         endif
       enddo
       call centroid(xxx(1:3,1:nx),nx,csol(1:3,k))
+      if (allocated(xxx)) deallocate (xxx)
     else
       call centroid(rt(1:3,c:d),d-c+1,csol(1:3,k))
     endif
