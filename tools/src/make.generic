@@ -2,6 +2,8 @@
 pname=$(basename $(echo $1 | sed 's/\(.*\)\..*/\1/' ))
 if [ "$2" == "intel" ]; then
   ifort -ip -O3 -xHost -o $pname $3 $pname.f90
+elif [ "$2" == "debug" ]; then
+  gfortran -O0 -Wall -ffree-line-length-none -ffpe-trap=invalid,zero,overflow -fbacktrace -g -fdump-core -fcheck=all -o $pname $3 $pname.f90
 else
   gfortran -O3 -march=native -ffree-line-length-none -o $pname $3 $pname.f90
 fi
