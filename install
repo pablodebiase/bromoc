@@ -125,8 +125,12 @@ fi
 echo 
 echo
 echo 'Adding PATH to ~/.bashrc'
-echo 'export PATH='$PWD'/bin:$PATH' >> ~/.bashrc
-export PATH='$PWD'/bin:$PATH
+if [ $(grep -c 'export PATH='$PWD'/bin:$PATH' ~/.bashrc) -eq 0 ]; then
+   echo 'export PATH='$PWD'/bin:$PATH' >> ~/.bashrc
+fi
+if [ $(env | grep $PWD'/bin' | grep -c PATH) -eq 0 ]; then
+  export PATH='$PWD'/bin:$PATH
+fi
 echo
 
 echo '---------------------------------------------------------------'
