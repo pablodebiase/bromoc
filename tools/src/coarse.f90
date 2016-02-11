@@ -324,12 +324,13 @@ read(line,*) tnf
 write(*,'(A,I8$)') 'Frame: ',nsc
 if (wof.eq.1) open(unit=3,file='coarse.pdb') 
 if (wof.eq.2) open(unit=3,file='coarse.xyz')
+if (wof.eq.3) open(unit=3,file='coarse.crd')
 do while (dcdopen.and.nsc.le.tnf)                  ! open loop for each frame
   call centall()                                   ! Compute geometric center (centroid)
   write(*,'(A8,I8$)') bs,nsc             ! print frame number
-  if (wof.eq.1.and.nsc.eq.tnf) call writeout(3)    ! writeout
+  if (wof.eq.1.and.nsc.eq.tnf) call writeout(3)    ! writepdb
   if (wof.eq.2.and.nsc.eq.tnf) call writexyz(3)    ! writexyz
-  if (wof.eq.3.and.nsc.eq.tnf) call writecharmmcrd(crdfile,3)
+  if (wof.eq.3.and.nsc.eq.tnf) call writecharmmcrd(3) ! writecrd
   if (cf.eq.1) then
     call readpdbcoor(2)
   elseif (cf.eq.2) then
@@ -350,7 +351,7 @@ end program
 subroutine writexyz(unitn)
 use comun
 implicit none
-integer i,j,k,l,nnn,unitn,nq,nqq
+integer i,j,k,l,nnn,unitn,nq,nqq,c,d
 character*4,allocatable ::  nam(:),namq(:)
 real*8,allocatable :: rq(:,:),rqq(:,:)
 real*8 cnt(3),dv(3)
@@ -372,11 +373,14 @@ do i=1,gfn
   enddo
 enddo
 cnt=cnt/nq
+
 do i=1,nion
-  do j=atlsi(rti(ions(i))),atlsf(rtf(ions(i)))
+  c=csoli(i) ! first atom of the selected ion type
+  d=csolf(i) ! last atom of the selected ion type
+  do j=c,d
     nq=nq+1
-    nam(nq)=res(j)
-    rq(1:3,nq)=rt(1:3,j)
+    nam(nq)=res(atlsi(rti(ions(i))))
+    rq(1:3,nq)=csol(1:3,j)
   enddo
 enddo
 
@@ -761,19 +765,17 @@ else
 endif
 end subroutine
 
-subroutine writecharmmcrd(crdfile,u)
+subroutine writecharmmcrd(u)
 use comun
 implicit none
 integer i,j,u
 character crdfile*256,frmt*64
 frmt='(I10,I10,2x,A4,6X,A4,4x,3F20.10,2X,A4,6X,A4,4x,F20.10)'
 !         1         1  ADE       H5T           -42.6356481721        8.6779119410       -0.3240608554  DNAA      1               0.0000000000
-open(unit=u,file=crdfile)
 write(u,'(I10,A)') na,'  EXT'
 do i=1,na
   write(u,frmt) iatom(i),ires(i),res(i),typ(i),(rt(j,i),j=1,3),segid(i),resid(i),w(i)
 enddo
-close(u)
 end subroutine
 
 subroutine writepdbnew(crdfile,con)
