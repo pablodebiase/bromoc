@@ -34,7 +34,7 @@ integer,allocatable :: rti(:),rtf(:),rlrt(:)
 integer agfpn,snd,afrn,frgn
 integer, allocatable :: agfpl(:),grf(:,:),frg(:),frgg(:),pmd(:),pmdi(:,:),pmdf(:,:),sndi(:),sndf(:),afr(:),afri(:,:),afrf(:,:)
 character*4,allocatable :: rtc(:)
-logical*1 dcdopen,depablo,bvon
+logical*1 dcdopen,depablo,bvon,nosolvh
 logical*1 cnvbox,center,masson,reass,charmm
 contains
 
@@ -244,9 +244,13 @@ do i=1,nion
 enddo
 if (tion.gt.0.and.nion.gt.0) allocate (csol(1:3,tion),csoli(nion),csolf(nion))
 
+call readarg('Ignore H in Solvent for computation of centroid (y/n) [y] ? ',narg,arg,line)
+nosolvh=.true.
+if (line(1:1).eq.'n'.or.line(1:1).eq.'N') nosolvh=.false.
+
 ! Build fragment list and allocate cent var
 call fraglist()
-write(*,'(A,I0)') 'Total Nucleotides fragments: ',agfpn
+write(*,'(/A,I0)') 'Total Nucleotides fragments: ',agfpn
   write(*,'(A)') 'Fragment Group Number | Fragment Group Label | Fragment Label | Number of Elements | Found Fragments' 
 do i=1,fn
   write(*,'(I5,3x,A4,3x,A4,3x,I5,3x,I5)') fg(i),gfl(fg(i)),fl(i),ff(i)-fi(i)+1,fp(i)
@@ -1223,7 +1227,10 @@ end subroutine
 subroutine centall()
 use comun
 implicit none
-integer i,j,k,c,d
+integer i,j,k,c,d,nx,l
+real*8,allocatable :: xxx(:,:)
+character*4,allocatable :: txx(:)
+
 if (depablo) then
   i=1
   do j=1,agfpn
@@ -1262,11 +1269,24 @@ do i=1,nion ! each solvent/ion type
     k=k+1
     c=atlsi(j)
     d=atlsf(j)
+    nx=d-c+1
+    allocate (xxx(1:3,1:nx),txx(1:nx))
+    if (masson) allocate (txx(1:nx))
+    nx=0
+    do l=c,d
+      if (.not.nosolvh.or.typ(l)(1:1).ne.'H') then
+        nx=nx+1
+        xxx(1:3,nx)=rt(1:3,l)
+        if (masson) txx(nx)=typ(l)
+      endif
+    enddo
     if (masson) then
-      call centmass(rt(1:3,c:d),d-c+1,csol(1:3,k),typ(c:d))
+      call centmass(xxx(1:3,1:nx),nx,csol(1:3,k),txx(1:nx))
     else
-      call centroid(rt(1:3,c:d),d-c+1,csol(1:3,k))
+      call centroid(xxx(1:3,1:nx),nx,csol(1:3,k))
     endif
+    if (allocated(xxx)) deallocate (xxx)
+    if (allocated(txx)) deallocate (txx)
   enddo
   csolf(i)=k
 enddo
