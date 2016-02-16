@@ -3,8 +3,8 @@
 #USAGE: ./imcpot2xmg inputfilename outputfilename numberofdatapoints numberofspecies 
 filein=$1  #imc input file 
 fileout=$2 #data output file
-num=$3   #numero de puntos
-sp=$4    #numero de especies
+num=$3   #number of points
+sp=$4    #number of species
 lns=$((($(cat $filein | wc -l)-1) / $num))
 sed -n '2,'$(($num+1))'p' $filein | awk '{print $1"   "$2}' > 'tmp1'
 files=tmp1
