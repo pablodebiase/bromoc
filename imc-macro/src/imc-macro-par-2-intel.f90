@@ -146,8 +146,8 @@ integer*1 restyp
 !namelist /input/ nmks,nmks0,lpot,filrdf,filpot,fout,af,fq,b1x,b1y,b1z,b2x,b2y,b2z,b3x,b3y,b3z,dr,iout,iav,iprint,regp,dpotm,rtm,eps,temp,iseed,wxyz,rxyz,wxyznm,rxyznm,wxyzfq,ldmppot,zeromove,lzm,lelec,lrespot,respotnm,lseppot,lseprdf
 namelist /input/ nmks,nmks0,lpot,filrdf,filpot,fout,fdmp,af,fq,b1x,b1y,b1z,b2x,b2y,b2z,b3x,b3y,b3z,dr,iout,iav,iprint,regp,dpotm,ldmp,lrst,rtm,eps,temp,iseed,wxyz,rxyz,wxyznm,rxyznm,wxyzfq,rstfq,ldmppot,zeromove,lzm,lelec,lrespot,respotnm,lseppot,lseprdf
 
-label    = 'IMC-MACRO-PAR-2 v3.90'
-datestamp = '19-02-2014'
+label    = 'IMC-MACRO-PAR-2 v3.91'
+datestamp = '15-02-2016'
 dr       = 5e0                  ! max particle displacement at each step
 iav      = 0                    ! how often < SaSb > evaluated (if iav=0 => iav=1.5*number of particles)
 regp     = 1e0                  ! regularization parameter - between 0 and 1
@@ -266,7 +266,7 @@ allocate (rdf(npot)) ! RDFs
 allocate (ina(npot),ityp1(npot),ityp2(npot)) ! INT
 allocate (cors(npot),corp(npot,npot)) ! CORR
 allocate (corsl(npot),corpl(npot,npot)) ! CORR
-allocate (cross(npot,npot),diff(npot),cor(npot),iucmp(npot),ipvt(npot))
+allocate (cross(npot,npot),diff(npot),cor(npot),iucmp(npot))
 
 nfix=0
 nspecf=0
@@ -903,6 +903,8 @@ if(iprint.ge.8)then
     write(*,'(i4,10(200f10.6/4x))') i,(cross(ic,jc),jc=1,nur)
   enddo
 endif
+
+allocate (ipvt(nur))
     
 ! CROSS * X = DIFF
 ! nur -> number of linear equations. order of cross matrix
@@ -912,10 +914,17 @@ endif
 ! ipvt -> integer array with nur dimension corresponds to permutation matrix P
 ! DIFF -> input DIFF(NUR,1) / output X(NUR,1)
 ! INFO if 0 solution obtained successfully
-call sgesv(nur,1,cross,npot,ipvt,diff,npot,info)
+call sgesv(nur,1,cross(1:nur,1:nur),nur,ipvt,diff(1:nur),nur,info)
 
 if(info.ne.0)then
    write(*,*)'STOP singular correlation matrix. Error #',info
+   if (info.lt.0) write(*,*) 'The ',-info,'th argument had an illegal value'
+   if (info.gt.0) write(*,*) 'U(',info,',',info,') is exactly zero. The factorization has been completed, but the factor U is exactly singular, so the solution could not be computed.'
+   write(*,*) 'DIM = ',nur
+   write(*,*) 'A = '
+   write(*,*) cross(1:nur,1:nur)
+   write(*,*) 'B = '
+   write(*,*) diff(1:nur)
    stop
 endif
 
