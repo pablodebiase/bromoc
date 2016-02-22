@@ -51,7 +51,7 @@ do igrand = 1, ngcmc
         rate = (avnum(ib)+kb(ib)*(avnum(ib)-real(ntotat(ib)/icycle)))
         rate = rate*exp(-(dener-mu(ib))*ikBT)/float(nat(ib)+1)
       else
-        rate = (avnum(ib)/(nat(ib)+1))*exp(-(dener-mu(ib))*ikBT)
+        rate = (avnum(ib)/float(nat(ib)+1))*exp(-(dener-mu(ib))*ikBT)
         ! Eq. 17 W. Im, and B. Roux Biophys. J. 79:188-801 (2000)          
       endif
       rate = rate/(1.0+rate) ! creation transition probability
