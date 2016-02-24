@@ -51,7 +51,7 @@ integer ix1,iy1,iz1,ix2,iy2,iz2
 real*4 idv
 real resol
 real vc1(3),vc2(3),vc3(3)
-logical*1 endlog, logfinal, Qlsprmf, doions, dodna,Qadj
+logical*1 endlog, logfinal, Qlsprmf, doions, dodna, Qadj 
 logical*1 logmemb, logmmij, logphix, logphiv, logsrpmf,logbuff,Qefpott,Qepwrt,logrfpar,Qnohead
 logical*1 Qexpl2nd,Qinputpar,Qonlychden
 real*8 zero
@@ -593,8 +593,9 @@ do while (.not. logfinal)
     Qpar = .true.
     call reasig
     ntc=(nttyp+ndna+1)*nion/2
-    allocate (Qchr(ntc),Qefpot(ntc),Qlj(ntc),Qsrpmfi(ntc),cg2(nttyp))
+    allocate (Qcol(ntc),Qchr(ntc),Qefpot(ntc),Qlj(ntc),Qsrpmfi(ntc),cg2(nttyp))
     Qchr=.false.
+    Qcol=.true.
     Qefpot=.false.
     Qlj=.false.
     Qsrpmfi=.false.
@@ -1772,6 +1773,11 @@ do while (.not. logfinal)
     cnt=0
     ntc=(nttyp+ndna+1)*nion/2 
     Qepwrt=check(com,'write')
+    ! Assume 0 charge for all particles
+    if (check(com,'ignoreq')) then
+      Qcol=.false.
+      write(outu,'(6x,a,i0)') 'EFPOT: Coulombic terms will be assumed 0 in head and tails (except for built potentials)'
+    endif
     if (Qepwrt) then 
       call gtipar(com,'unit',wunit,1)
       wunit = unvec(wunit)
@@ -1866,6 +1872,7 @@ do while (.not. logfinal)
             write(outu,'(6x,a,1x,2a,i5,2(a,f8.3))')atnam2(i),atnam2(j),'  Number of Points:',1-nxi(is)+nxf(is),'  From-To: ',xy(1,nxi(is)),' - ',xy(1,nxf(is))
             call splinepot(is,1-nxi(is)+nxf(is),xy(1,nxi(is):nxf(is)),xy(2,nxi(is):nxf(is)),nxf(is))
           elseif (Qefpot(is).and..not.Qefpotread(is)) then
+            Qcol(is) = .true. ! if discretize is active, ignore this keyword for that pair 
             nnp=int(dmi(is)*ires)
             mnp=nxf(is)-nxi(is)+nnp
             call discretize(is,nnp,mnp,nxf(is))

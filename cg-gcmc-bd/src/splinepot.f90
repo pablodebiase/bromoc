@@ -30,7 +30,7 @@ dm2(1,is)=xx(1)**2
 dm2(2,is)=xx(nn)**2
 ! Shifting potential
 if(xx(nn).eq.0.0.or.xx(1).eq.0.0) stop 'Division by zero'
-if (Qchr(is)) then
+if (Qcol(is).and.Qchr(is)) then
   kf=fct(is)
 else
   kf=0.0

@@ -19,6 +19,7 @@
 module extramod
 implicit none
 real,allocatable       :: fct(:)
-logical*1,allocatable  :: Qchr(:)
+logical*1,allocatable  :: Qchr(:),Qcol(:)
+! If Qcol false, assume 0 charge particles for effective potentials
 end module
 

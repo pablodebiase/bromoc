@@ -181,7 +181,7 @@ if (x2.lt.dm2(1,is)) then
   y=sc(1,is)*ix2**6 + sc(2,is)
 elseif (x2.gt.dm2(2,is)) then
   ix2=1.0/x2
-  if (Qchr(is)) then
+  if (Qcol(is).and.Qchr(is)) then
     y=sc(3,is)*ix2**3+fct(is)*sqrt(ix2) ! coulomb term for tail
   else
     y=sc(3,is)*ix2**3 !+sc(4,is)*ix2**6
@@ -211,7 +211,7 @@ elseif (x2.gt.dm2(2,is)) then
   ix2=1.0/x2
   c=sc(3,is)*ix2**3
 !  d=sc(4,is)*ix2**6
-  if (Qchr(is)) then ! coulomb term for tail
+  if (Qcol(is).and.Qchr(is)) then ! coulomb term for tail
     f=fct(is)*sqrt(ix2)
     y=c + f !+ d
 !    yp=(12.0*d + 6.0*c + f)*ix2
@@ -241,7 +241,7 @@ if (x2.lt.dm2(1,is)) then
   yp=12.0*sc(1,is)/x2**7 
 elseif (x2.gt.dm2(2,is)) then
   ix2=1.0/x2
-  if (Qchr(is)) then 
+  if (Qcol(is).and.Qchr(is)) then 
     yp=6.0*sc(3,is)*ix2**4+fct(is)*sqrt(ix2)*ix2    ! coulomb term for tail
   else
     yp=6.0*sc(3,is)*ix2**4 !+ 12.0*sc(4,is)*ix2**7
