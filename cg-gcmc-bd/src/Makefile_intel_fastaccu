@@ -63,7 +63,7 @@ all : $(obj)
 FCOMPL = ifort
 #FFLAGC = -C -fno-align-commons
 #Double Precision Real
-FLAGPAR = -openmp
+FLAGPAR = -qopenmp
 FFLAGC = -real-size 64 -integer-size 32 -heap-arrays 0
 #FFLAGC = -align commons -real-size 64 -integer-size 32 -heap-arrays 0
 #Single Precision Real
