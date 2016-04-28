@@ -240,7 +240,7 @@ itot=1.0/sum(densi(1:bins,ni+1))
 ! Print out result
 open(unit=1,file=trim(filename))
 
-write(line,*) 'z   ',(fl(i),i=gfi(ion),gff(ion)),'  Total'
+write(line,*) '# z   ',(fl(i),i=gfi(ion),gff(ion)),'  Total'
   write(1,'(A)') trim(line)
 do i=1,bins
   x=(i-1)*res+lli
