@@ -179,9 +179,9 @@ write(*,'(A)') 'Building residue list ...'
 call reslist()
 
 ! reassing O3' to next residue
-call readarg('Reassign O3 (y/n) [y]? ',narg,arg,line)
+call readarg('Reassign O3 (y/n) [n]? ',narg,arg,line)
 reass=.false.
-if (.not.(line(1:1).eq.'n'.or.line(1:1).eq.'N')) then
+if (line(1:1).eq.'y'.or.line(1:1).eq.'Y') then
   reass=.true.
   call reassigno3()
   call reslist()
@@ -189,11 +189,9 @@ endif
 
 write(*,'(A,I0)') 'Read residues: ',nn
 
-call readarg('Locate coarse bases at geometric/mass center (y/n) [n]? ',narg,arg,line)
+call readarg('Locate coarse bases at geometric/mass center (y/n) [y]? ',narg,arg,line)
 
-if (line(1:1).eq.'Y'.or.line(1:1).eq.'y') then
-  depablo=.false.
-else
+if (line(1:1).eq.'N'.or.line(1:1).eq.'n') then
   depablo=.true.
   write(*,'(A)') 'Turning on de Pablo et al coarse grained DNA'
   write(*,'(A)') 'Select the atomtype where to center the base (usually N1 for G/A & N3 for C/T)'
@@ -210,13 +208,15 @@ else
     if (len_trim(line).gt.0) read(line,*) dp(j)
     write(*,'(I0,A,A)') dp(j),' ',fel(fi(j)-1+dp(j))
   enddo
+else
+  depablo=.false.
 endif
 
-call readarg('Use center of mass to define center of coarse particles (otherwise will use geometric center) (y/n) [y]? ',narg,arg,line)
-if (line(1:1).eq.'N'.or.line(1:1).eq.'n') then
-  masson=.false.
-else
+call readarg('Use center of mass to define center of coarse particles (otherwise will use geometric center) (y/n) [n]? ',narg,arg,line)
+if (line(1:1).eq.'Y'.or.line(1:1).eq.'y') then
   masson=.true.
+else
+  masson=.false.
 endif
 
 ! Buid residue type list
@@ -372,7 +372,7 @@ do i=1,gfn
     cnt(1:3)=cnt(1:3)+rq(1:3,nq)
   enddo
 enddo
-cnt=cnt/nq
+if (nq.gt.0) cnt=cnt/nq
 
 do i=1,nion
   c=csoli(i) ! first atom of the selected ion type
@@ -769,7 +769,7 @@ subroutine writecharmmcrd(u)
 use comun
 implicit none
 integer i,j,u
-character crdfile*256,frmt*64
+character frmt*64
 frmt='(I10,I10,2x,A4,6X,A4,4x,3F20.10,2X,A4,6X,A4,4x,F20.10)'
 !         1         1  ADE       H5T           -42.6356481721        8.6779119410       -0.3240608554  DNAA      1               0.0000000000
 write(u,'(I10,A)') na,'  EXT'
@@ -860,10 +860,11 @@ if (na.ne.natom) stop 'Number of atoms differ between .crd and .dcd'
 !print *, '# of free atoms = ',nfree
 !print *, 'total # atom = ', natom,nstep,nsavc
 !nsc = nstep/nsavc
+!print *, icntrl(1:20)
 charmm=.false.
 if (icntrl(2).eq.0) charmm=.true.
 tnf=1
-if (.not.charmm) tnf=icntrl(4)/icntrl(3)
+if (.not.charmm.and.icntrl(4).gt.0.and.icntrl(3).gt.0) tnf=icntrl(4)/icntrl(3)
 
 write(*,'(A,I0)') 'Total number of frames: ',tnf
 nsc=0
@@ -1033,38 +1034,41 @@ do i=1,nn
   if (agfpres(i)) agfpn=agfpn+1 ! number of residues with all the group fragments present (active residues)
 enddo
 
-allocate (agfpl(agfpn),grf(gfn,agfpn))
-
-j=0
-do i=1,nn
-  if (agfpres(i)) then
-    j=j+1
-    agfpl(j)=i  ! agfpl(1:agfpn)->residue number: is a list that gives the residue numbers which have all the group fragment present (active residues)
-  endif
-enddo
-
-sgid=segid(atlsi(agfpl(1)))
-snd=1
-do i=2,agfpn
-  if (sgid.ne.segid(atlsi(agfpl(i)))) snd=snd+1 ! snd is the number of strands
-  sgid=segid(atlsi(agfpl(i)))
-enddo
-
-allocate (sndi(snd),sndf(snd))
-
-! set the begining and end of each strand in agfpl order
-sgid=segid(atlsi(agfpl(1)))
-snd=1
-sndi=1
-do i=2,agfpn
-  if (sgid.ne.segid(atlsi(agfpl(i)))) then 
-    sndf(snd)=i-1 ! end
-    snd=snd+1
-    sndi(snd)=i   ! begining
-  endif
-  sgid=segid(atlsi(agfpl(i)))
-enddo
-sndf(snd)=agfpn
+snd=0
+if (agfpn.gt.0) then
+    allocate (agfpl(agfpn),grf(gfn,agfpn))
+    
+    j=0
+    do i=1,nn
+      if (agfpres(i)) then
+        j=j+1
+        agfpl(j)=i  ! agfpl(1:agfpn)->residue number: is a list that gives the residue numbers which have all the group fragment present (active residues)
+      endif
+    enddo
+    
+    sgid=segid(atlsi(agfpl(1)))
+    snd=1
+    do i=2,agfpn
+      if (sgid.ne.segid(atlsi(agfpl(i)))) snd=snd+1 ! snd is the number of strands
+      sgid=segid(atlsi(agfpl(i)))
+    enddo
+    
+    allocate (sndi(snd),sndf(snd))
+    
+    ! set the begining and end of each strand in agfpl order
+    sgid=segid(atlsi(agfpl(1)))
+    snd=1
+    sndi=1
+    do i=2,agfpn
+      if (sgid.ne.segid(atlsi(agfpl(i)))) then 
+        sndf(snd)=i-1 ! end
+        snd=snd+1
+        sndi(snd)=i   ! begining
+      endif
+      sgid=segid(atlsi(agfpl(i)))
+    enddo
+    sndf(snd)=agfpn
+endif
 
 fp=0
 do i=1,gfn
