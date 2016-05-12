@@ -27,7 +27,7 @@ use errormod
 use charfuncmod, only: sng,i8toi   !command parser
 
 implicit none
-integer*8   ncycle,i,icycle,nsec2,nsave,nsfbs
+integer*8   ncycle,i,icycle,nsec2,nsave,nsfbs,ncountav(ntype-nold)
 integer ngcmc, nmcm, nbd, ntras, nsec, j,istep,np1,np2,ii
 real    vfbs
 integer   iat, jat, itype, ib, n, iz, ir
@@ -35,7 +35,7 @@ real    naver
 !real*16 dener
 real dener
 real    current, area, zz, vol1, vol2, pres, vir
-integer   ncount(ntype-nold) 
+integer   ncount(ntype-nold)
 integer   prob(nbuffer,0:datom) 
 integer   prob2(ntype,0:datom) 
 integer   prob3(ntype,0:datom)      
@@ -72,6 +72,9 @@ integer nmemb
 
 ! line
 character*8192 ln
+
+! reset ncountav
+ncountav = 0
 
 itvol=1.0/tvol
 Qforces = .false.
@@ -352,6 +355,17 @@ do icycle = 1, ncycle
 
   if (ngcmc.gt.0) then
     call grand(ngcmc,prob,icycle)
+    ! count ions and accumulate for average
+    if (Qpar) then
+      ncount(1:ntype-nold) = 0
+      do iat = nsites+1, ntot
+        itype = abs(typei(iat))-nold
+        ncount(itype) = ncount(itype) + 1
+      enddo
+      do itype = 1,ntype-nold
+        ncountav(itype) = ncountav(itype) + ncount(itype)
+      enddo
+    endif
   endif 
 
   if (nmcm.gt.0) then
@@ -740,13 +754,15 @@ if (Qpar) then
   write (outu,'(6x,a)') 'Results from the simulation: '
   write (outu,'(6x,a)') '-----------------------------'
 
+  write (outu,'(6x,a,f16.8)') 'Total average number of ions ',float(sum(ncountav(1:ntype-nold)))/float(ncycle)
   write (outu,'(6x,a,i4)') 'Total number of ions ',ntot-nsites
   if (Qbuf) then
     call count
     do ib = 1, nbuffer
       write (outu,'(6x,a,2i4)') 'buffer--number of ions ',ib,nat(ib)
     enddo
-  endif 
+  endif
+  
 
   write (outu,*) 
   write (outu,'(6x,a)') 'Statistics: '
@@ -756,11 +772,16 @@ if (Qpar) then
     itype = abs(typei(ii))-nold
     ncount(itype) = ncount(itype) + 1
   enddo
-  write(outu,'(6x,a)') 'Total number of ions per type:' 
+  write(outu,'(6x,a)') 'Last total number of non-fixed ions per type:' 
   do itype=1,ntype-nold
     write(outu,'(6x,a,a,i0)') atnam(itype+nold),' =  ',ncount(itype)
   enddo
-  write (outu,*) 
+  write (outu,*)
+  write(outu,'(6x,a)') 'Average number of ions per type:' 
+  do itype = 1,ntype-nold
+    write (outu,'(6x,a,a,f16.8)') atnam(itype+nold),' =  ',float(ncountav(itype))/float(ncycle)
+  enddo
+  write (outu,*)
   
   if (ngcmc.gt.0) then
     if (Qpar.and.Qcountion.and.nbd.gt.0) then
