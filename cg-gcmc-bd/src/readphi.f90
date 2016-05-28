@@ -185,10 +185,10 @@ if (wrd4.eq.'PHIV') then
     if (Qpar) then
       if (Qnucl .and. istrs.eq.1) numb = inuc + 1
       if (Qnucl .and. istrs.eq.2) numb = 2*inuc + 1
-      ifir = ifir0 + (ntype-numb)*ncel3 + 1
       ilas = ifir0 + (ntype-numb)*ncel3 + ncel3 
     endif
     if (allocated(phiv)) deallocate (phiv)
+    if (allocated(phivt)) deallocate (phivt)
     allocate (phiv(ifir:ilas),phivt(ifir:ilas))
     if (Qnucl) then 
       do isite = 1, 6 ! sites (S,P,Ab,Tb,Cb,Gb)

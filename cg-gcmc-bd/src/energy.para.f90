@@ -145,12 +145,12 @@ if (Qenergy) then
   if (tid.eq.0) then
     ini=1+nsites+nfix
   else
-    ini=sqrt(0.25+2.0*bb*tid+nfix*(nfix-1))+0.5+1+nsites
+    ini=int(sqrt(0.25+2.0*bb*tid+nfix*(nfix-1))+0.5+1+nsites)
   endif
   if (tid+1.eq.nth) then
     fin=ntot
   else
-    fin=sqrt(0.25+2.0*bb*(tid+1)+nfix*(nfix-1))+0.5+nsites
+    fin=int(sqrt(0.25+2.0*bb*(tid+1)+nfix*(nfix-1))+0.5+nsites)
   endif
 
   ! nonbonded interaction between ions

@@ -445,7 +445,6 @@ use constamod
 use gsbpmod
 implicit none
 !input variables
-integer j, jtype
 real  xj, yj, zj
 !local variables
 integer ncyz,ix,iy,iz,n1,n2,n3,in3
@@ -504,7 +503,6 @@ implicit none
 integer ncyz,i,j,k
 real  xii,yii,zii
 integer ix1,iy1,iz1,ix2,iy2,iz2
-real res,pos,dist,idist
 integer unitn
 logical*1 Qnohead
 character line*1024
@@ -550,7 +548,6 @@ implicit none
 integer ncyz,i,j,k
 real  xii,yii,zii
 integer ix1,iy1,iz1,ix2,iy2,iz2
-real res,pos,dist,idist
 integer unitn
 logical*1 Qnohead
 character line*1024

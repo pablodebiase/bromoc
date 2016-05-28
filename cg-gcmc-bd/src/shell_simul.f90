@@ -2728,13 +2728,6 @@ do while (.not. logfinal)
        if (Qnmcden) then
          write(outu,*)
          write(outu,'(6x,a)') 'Different ion-accessible space is used for different ions and sites'
-       endif   
-       call gtipar(com,'phivunit',iunit,1)
-       if (iunit.le.0) call error ('shell_simul', 'unit is zero or a negative number', faterr)
-       if (iunit.gt.maxopen) call error ('shell_simul', 'unit is greater than maxopen', faterr)
-       if (unvec(iunit).eq.-1) call error ('shell_simul', 'unit incorrect in GSBP order', faterr)
-       iunit = unvec(iunit)
-       if (Qnmcden) then
          if (Qnucl .and. Qpar) then
            if (istrs.eq.1) numb = inuc
            if (istrs.eq.2) numb = 2*inuc
@@ -2747,15 +2740,25 @@ do while (.not. logfinal)
            call error ('shell_simul', 'GSBP order is defined before PARTICLE and/or NUCLEOTIDES orders', faterr)
          endif
          if (totnumb.gt.maxopen) call error ('shell_simul', 'unit is greater than maxopen', faterr)
-         do i = 1, totnumb
-           call gtipar(com,'munit',iunit,0)
+         call gtcpar(com,'munit',nn,word)
+         if (nn.eq.0) call error ('shell_simul','munit cannot be empty or ommited',faterr)
+         if (nn.ne.totnumb) call error ('shell_simul','number of units in munit does not match with number of types',faterr)
+         call gtcipar(word,vecphiv)
+         do i=1,totnumb
+           iunit=vecphiv(i)
            if (iunit.le.0) call error ('shell_simul', 'unit is zero or a negative number', faterr)
            if (iunit.gt.maxopen) call error ('shell_simul', 'unit is greater than maxopen', faterr)
            if (unvec(iunit).eq.-1) call error ('shell_simul', 'unit incorrect in GSBP order', faterr)
            vecphiv(i) = unvec(iunit)
          enddo
+         iunit=vecphiv(1)
          write(outu,'(6x,a,10i3)') 'Reading grid-based repulsive potential from unit ',(vecphiv(i),i=1,totnumb)
        else
+         call gtipar(com,'phivunit',iunit,1)
+         if (iunit.le.0) call error ('shell_simul', 'unit is zero or a negative number', faterr)
+         if (iunit.gt.maxopen) call error ('shell_simul', 'unit is greater than maxopen', faterr)
+         if (unvec(iunit).eq.-1) call error ('shell_simul', 'unit incorrect in GSBP order', faterr)
+         iunit = unvec(iunit)
          write(outu,*)
          write(outu,'(6x,a,i3)')'Reading grid-based repulsive potential from unit ',iunit
        endif
@@ -2921,7 +2924,6 @@ do while (.not. logfinal)
      call date_and_time(date, time, zone, values)
      write(outu,'(/6x,a,7(i0,a))') 'Finished at (YYYY-MM-DD HH:mm:ss.ms): ',values(1),'-',values(2),'-',values(3),' ',values(5),':',values(6),':',values(7),'.',values(8)
      logfinal = .true.
-  106     format(6x,a,f15.2,a)
   else
     write(outu,'(6x,a)') '*ERROR*  Unrecognized command:'
   endif

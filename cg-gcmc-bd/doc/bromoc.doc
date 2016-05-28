@@ -1,5 +1,5 @@
                      -----------------------------------------------
-                    |  BROMOC (CG-GCMC-BD) 4.12 Documentation file  |
+                    |  BROMOC (CG-GCMC-BD) 4.14 Documentation file  |
                      -----------------------------------------------
 
 
@@ -11,7 +11,7 @@
 LAST MODIFICATION
 -----------------
 
-May 12th, 2016
+May 27th, 2016
 
 
 REFERENCES
@@ -701,11 +701,12 @@ syntax:
   {phiv}                : Activates repulsion field
   svdw         |50.0|   : magnitude of grid-based repulsive potential (in kcal/mol)
   phivunit       |-1|   : unit for ion-accessible space
-  vzmin       | LZ/2|   : maximum position of a grid for phiv along the Z-axis [Ang.]
+  vzmin          |LZ/2| : maximum position of a grid for phiv along the Z-axis [Ang.]
   vzmax         |-LZ/2| : minimum position of a grid for phiv along the Z-axis [Ang.]
   {bspline}             : Is the 2rd-order B-spline interpolation for phiv
                           (default is trilinear interpolation (faster))
-  {nmcden}              : use different ion-accessible space for different ions
+  {nmcden}              : use different ion-accessible space for different ions. phivunit is ignored if nmcden enabled.
+  munit   |int,int,...| : unit numbers for each repulsive potentials when nmcden is enabled. Separate unit numbers by comma or any symbol except space. No default values so cannot be ommited. Unit number order must match the ions order defined in PARTICLE.
   thold27        |27.0| : threshold warning for repulsive map for 27 grid cells case (only for debugging purposes)
   thold8          |8.0| : threshold warning for repulsive map for 8 grid cells case (only for debugging purposes)
   repwalls        |126| : Repulsion Walls generates different layers of repulsion inside a closed repulsive body to aid
@@ -713,7 +714,7 @@ syntax:
                           of walls depends on the resolution of a map. For a grid of 0.5 Ang, a repwalls=4 would make 2 Ang
                           of repulsive layers inside the body. The repulsive layer length should be greater than maximum
                           displacement for BD or MC (bdmax and mcmax) in SIMULATION. A max value of 126 is allowed and activated by default.
-                          There is no performance issue with this keyword and max value is encourage to be used.
+                          There is no performance issue with this keyword and the use of the max value is encouraged.
                           Works for trilinear, bspline and nmcden. If it is zero, repwalls is deactivated.
   {phix}                : Activates static external field
   phixunit         |-1| : File unit number for static external field
@@ -729,7 +730,7 @@ syntax:
   {rfpar}               : Enables Reaction Field Parameters (not compatible with mmij)
   rfparunit  int,int,...: Unit numbers for each rfpar type. Separate unit numbers by comma or any symbol except space. No default values so cannot be ommited. Unit number order must match the ions order defined in PARTICLE.
   rfparfac        |1.5| : factor for effective radius parameters
-  {rfpsingle}         : It will read the first map given in rfparunit assuming maps are same for all ions
+  {rfpsingle}           : It will read the first map given in rfparunit assuming maps are same for all ions
 
 example 1: one repulsive potential [phiv] for all ion types, static field [phix],
            and [mmij] reaction field
