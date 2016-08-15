@@ -31,6 +31,7 @@ logical*1 endok
 
 endok = .true.  
 natom2 = float(natom - nsites)
+if (natom2.le.0) return
 do while (endok)
   iat = nsites + nfix + int(natom2*rndm()) + 1 ! [nsites+nfix+1,ntot]
   xnew = x(iat) + mcmax*(rndm()-0.5)
