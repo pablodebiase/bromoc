@@ -354,6 +354,7 @@ if (Qproxdiff) fact2pd=sqrt(2.0*dt*diff0)
 do icycle = 1, ncycle
 
   if (ngcmc.gt.0) then
+    call count
     call grand(ngcmc,prob,icycle)
     ! count ions and accumulate for average
     if (Qpar) then
@@ -473,7 +474,6 @@ do icycle = 1, ncycle
     endif
   endif
 
-  call count
 
   !Security outputfile contains coordinates and seed nnumbers
   if (Qsec) then

@@ -21,13 +21,14 @@ subroutine metropolis(nmcm)
 
 use grandmod
 use constamod
+use nucleotmod
 implicit none
 integer nmcm
 integer iat, imove
 !real*16 bltz,eold, enew
 real bltz,eold, enew
 real xnew, ynew, znew
-
+if (natom.le.nsites) return
 do imove = 1, nmcm
 
 !pick one atom and move it 

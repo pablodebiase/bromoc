@@ -39,7 +39,7 @@ real*4,allocatable :: efield(:,:)
 integer, allocatable :: nxf(:)  
 logical*1, allocatable :: Qefpotread(:)
 character*1,allocatable :: secstr(:)
-character com*2048,word*1024,fnam*80,wrd5*5
+character com*2048,word*1024,fnam*80,wrd5*5,wrd6*6
 integer unvec(maxopen), numb, totnumb, nions, kode, maxpart, ncl3, in1, in2
 character*80 title
 character*4 wrd4,ionname
@@ -53,7 +53,7 @@ real resol
 real vc1(3),vc2(3),vc3(3)
 logical*1 endlog, logfinal, Qlsprmf, doions, dodna, Qadj 
 logical*1 logmemb, logmmij, logphix, logphiv, logsrpmf,logbuff,Qefpott,Qepwrt,logrfpar,Qnohead
-logical*1 Qexpl2nd,Qinputpar,Qonlychden
+logical*1 Qexpl2nd,Qinputpar,Qonlychden,Qpdb,Qpdbe
 real*8 zero
 !for time
 integer*8       start,finish,timer
@@ -2062,10 +2062,21 @@ do while (.not. logfinal)
        elseif (check(com,'pdb')) then
          if (.not.Qsphere) write(iunit,'(A6,3f9.3,3f7.2)') 'CRYST1',LX,LY,LZ,90.0,90.0,90.0
          do i=1,nsites
-           write (iunit,'(A6,I5,x,A5,A5,I4,4x,3F8.3)') 'ATOM  ',i,atnam2(typtyp(i)),'DNA  ',typtyp(i),x(i),y(i),z(i)
+           write (iunit,'(A6,I5,x,A5,A5,I4,4x,3F8.3,2F6.2,6x,A4)') 'ATOM  ',i,atnam2(typtyp(i)),'DNA ',strand(i),x(i),y(i),z(i),0.0,0.0,''
          enddo
          do i=1+nsites,ntot
-           write (iunit,'(A6,I5,x,A5,A5,I4,4x,3F8.3)') 'ATOM  ',i,atnam2(nwtype(abs(typei(i)))),'ION  ',nwtype(abs(typei(i))),x(i),y(i),z(i)
+           wrd4=atnam2(nwtype(abs(typei(i))))
+           write (iunit,'(A6,I5,x,A5,A5,I4,4x,3F8.3,2F6.2,6x,A4)') 'ATOM  ',i,wrd4,wrd4,i-nsites+istrs,x(i),y(i),z(i),0.0,0.0,''
+         enddo
+         write (iunit,'(A)') 'END'
+       elseif (check(com,'pdbe')) then
+         if (.not.Qsphere) write(iunit,'(A6,3f9.3,3f7.2)') 'CRYST1',LX,LY,LZ,90.0,90.0,90.0
+         do i=1,nsites
+           write (iunit,'(A6,I5,x,A5,A5,I4,4x,3F16.8,2F6.2,6x,A4)') 'ATOM  ',i,atnam2(typtyp(i)),'DNA ',strand(i),x(i),y(i),z(i),0.0,0.0,''
+         enddo
+         do i=1+nsites,ntot
+           wrd4=atnam2(nwtype(abs(typei(i))))
+           write (iunit,'(A6,I5,x,A5,A5,I4,4x,3F16.8,2F6.2,6x,A4)') 'ATOM  ',i,wrd4,wrd4,i-nsites+istrs,x(i),y(i),z(i),0.0,0.0,''
          enddo
          write (iunit,'(A)') 'END'
        else
@@ -2393,56 +2404,91 @@ do while (.not. logfinal)
        if (unvec(iunit).eq.-1) call error ('shell_simul', 'unit incorrect in COOR order', faterr)
        iunit = unvec(iunit)
        write(outu,'(6x,a,i3)')'Reading coordinates from unit ',iunit
-       if (Qnucl) then
-         read(iunit,*) ii
-         if (ii.ne.nsites) call error ('shell_simul', 'NSITES has a wrong value',faterr)
-         write(outu,'(6x,a,i5)') 'nsites ',nsites
-         do i = 1, nsites
-           read(iunit,'(a)') com
-! free format
-           read(com,*) strand(i), namnucl(i),namsite(i), x(i), y(i), z(i)
-!           read(com,'(i1,1x,a1,1x,a2,1x,f10.5,1x,f10.5,1x,f10.5)') strand(i), namnucl(i),namsite(i), x(i), y(i), z(i)
-         enddo
-         ntot = nsites
-       endif
-       if (Qpar) then 
-         if (check(com,'charmm')) then
-           ! CHARMM format     
-           endlog = .true.
-           do while (endlog)
+       Qpdbe=check(com,'pdbe')
+       Qpdb=check(com,'pdb')
+       if (Qpdbe) write(outu,'(6x,a)') 'Format requested: PDBE (PDB with extended coordinate digits)'
+       if (Qpdb) write(outu,'(6x,a)')  'Format requested: PDB'
+       if (Qpdb.or.Qpdbe) then
+         read(iunit,'(A6)') wrd6
+         if (wrd6.ne.'CRYST1') call error('shell_simul','this file has not BROMOC PDB format',faterr)
+         if (Qnucl) then
+           do i = 1, nsites
              read(iunit,'(a)') com
-             endlog = com(1:1).eq.'*'
-           enddo 
-           read(com,'(i5)') nions
-           write(outu,'(6x,a,i5)') 'nions ',nions
-           ntot = nsites + nions
-           if (ntot.gt.datom) call error ('shell_simul', 'ntot is greater than datom', faterr)
-           do i = nsites+1, ntot
-             read(iunit,'(a)') com
-             read(com,*) ii,ii,ionname,ionname,x(i),y(i),z(i),ibuffer(i)
-!             read(com,'(i5,1x,i5,1x,a4,1x,a4,1x,f10.5,1x,f10.5,1x,f10.5,1x,i4)') ii,ii,ionname,ionname,x(i),y(i),z(i),ibuffer(i)
-             if (ii.ne.i) call error ('shell_simul', 'incorrect number of ions in COOR order', faterr)
-             call fatnam(atnam,ntype,ionname,itype)
-             typei(i)=itype
+             if (Qpdbe) then
+               read(com,'(6x,5x,x,5x,5x,4x,4x,3F16.8)') x(i), y(i), z(i)
+             else
+               read(com,'(6x,5x,x,5x,5x,4x,4x,3F8.3)') x(i), y(i), z(i)
+             endif
            enddo
-         else
-           read(iunit,'(i5)') nions
-           write(outu,'(6x,a,i5)') 'nions ',nions
-           ntot = nsites + nions
-           if (ntot.gt.datom) call error ('shell_simul', 'ntot is greater than datom', faterr)
-           do i = nsites+1, ntot
-             read(iunit,'(a)') com
-             read(com,*) ii,typei(i),x(i),y(i),z(i),ibuffer(i)
-!             read(com,'(i5,1x,i5,1x,f10.5,1x,f10.5,1x,f10.5,1x,i4)') ii,typei(i),x(i),y(i),z(i),ibuffer(i)
-             if (ii.ne.i) call error ('shell_simul', 'incorrect number of ions in COOR order', faterr)
-           enddo
+           ntot = nsites
          endif
-         call gtipar(com,'nfix',nfix,nfix)
-         if (nfix.lt.0) call error ('shell_simul', 'nfix is lower than zero',faterr)
-         natom = ntot - nfix
-       endif  
+         if (Qpar) then
+           read(iunit,'(a)') com
+           do while (trim(adjustl(com)).ne.'END')
+             ntot=ntot+1
+             if (Qpdbe) then
+               read (com,'(6x,5x,x,A5,5x,4x,4x,3F16.8)') wrd4,x(ntot),y(ntot),z(ntot)
+             else
+               read (com,'(6x,5x,x,A5,5x,4x,4x,3F8.3)') wrd4,x(ntot),y(ntot),z(ntot)
+             endif
+             call fatnam(atnam,ntype,wrd4,itype)
+             typei(ntot)=itype
+             read(iunit,'(a)') com
+           enddo
+           nions=ntot-nsites
+         endif
+       else
+         if (Qnucl) then
+           read(iunit,*) ii
+           if (ii.ne.nsites) call error ('shell_simul', 'NSITES has a wrong value',faterr)
+           write(outu,'(6x,a,i5)') 'nsites ',nsites
+           do i = 1, nsites
+             read(iunit,'(a)') com
+! free   format
+             read(com,*) strand(i), namnucl(i),namsite(i), x(i), y(i), z(i)
+!             read(com,'(i1,1x,a1,1x,a2,1x,f10.5,1x,f10.5,1x,f10.5)') strand(i), namnucl(i),namsite(i), x(i), y(i), z(i)
+           enddo
+           ntot = nsites
+         endif
+         if (Qpar) then 
+           if (check(com,'charmm')) then
+             ! CHARMM format     
+             endlog = .true.
+             do while (endlog)
+               read(iunit,'(a)') com
+               endlog = com(1:1).eq.'*'
+             enddo 
+             read(com,'(i5)') nions
+             write(outu,'(6x,a,i5)') 'nions ',nions
+             ntot = nsites + nions
+             if (ntot.gt.datom) call error ('shell_simul', 'ntot is greater than datom', faterr)
+             do i = nsites+1, ntot
+               read(iunit,'(a)') com
+               read(com,*) ii,ii,ionname,ionname,x(i),y(i),z(i),ibuffer(i)
+!               read(com,'(i5,1x,i5,1x,a4,1x,a4,1x,f10.5,1x,f10.5,1x,f10.5,1x,i4)') ii,ii,ionname,ionname,x(i),y(i),z(i),ibuffer(i)
+               if (ii.ne.i) call error ('shell_simul', 'incorrect number of ions in COOR order', faterr)
+               call fatnam(atnam,ntype,ionname,itype)
+               typei(i)=itype
+             enddo
+           else
+             read(iunit,'(i5)') nions
+             write(outu,'(6x,a,i5)') 'nions ',nions
+             ntot = nsites + nions
+             if (ntot.gt.datom) call error ('shell_simul', 'ntot is greater than datom', faterr)
+             do i = nsites+1, ntot
+               read(iunit,'(a)') com
+               read(com,*) ii,typei(i),x(i),y(i),z(i),ibuffer(i)
+!               read(com,'(i5,1x,i5,1x,f10.5,1x,f10.5,1x,f10.5,1x,i4)') ii,typei(i),x(i),y(i),z(i),ibuffer(i)
+               if (ii.ne.i) call error ('shell_simul', 'incorrect number of ions in COOR order', faterr)
+             enddo
+           endif
+           call gtipar(com,'nfix',nfix,nfix)
+           if (nfix.lt.0) call error ('shell_simul', 'nfix is lower than zero',faterr)
+           natom = ntot - nfix
+         endif
+       endif 
        write(outu,'(6x,a)') 'coordinates have been read'
-       call COUNT
+       call count
      elseif (check(com,'gener')) then
        dodna=.false.
        doions=.false.
