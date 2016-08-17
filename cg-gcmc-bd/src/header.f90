@@ -32,7 +32,7 @@ write (lus,500)
  1x,'*******        (c) 2010 Sergei Y. Noskov,       University of Calgary         *******'/ &
  1x,'*******        (c) 2010 Carlos J. F. Solano,    University of Calgary         *******'/ &
  1x,'*******        (c) 2011 Pablo M. De Biase,      University of Calgary         *******'/ &
- 1x,'*******                       Version 4.15 (2016/08/14)                       *******'/ &
+ 1x,'*******                       Version 4.16 (2016/08/17)                       *******'/ &
  1x,'*************************************************************************************'/ &
  1x,'*******                                                                       *******'/ & 
  1x,'******* Copyright (C) 2014 Pablo M. De Biase (pablodebiase@gmail.com)         *******'/ &
