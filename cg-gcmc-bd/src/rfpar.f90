@@ -271,10 +271,13 @@ real xi,yi,zi,ai,bi,ci,fi
 real aisign,bisign,cisign
 logical*1 ok
 
+if (j.le.nsites) return
+
 ncyz=ncly3*nclz3
 ncel3=nclx3*ncyz
 one=1.0
 erfpar=0.0
+
 
 !     Main loop by atoms
 if (.not.(xj.le.xbcen3+tranx3.and.xj.ge.xbcen3-tranx3.and. &
