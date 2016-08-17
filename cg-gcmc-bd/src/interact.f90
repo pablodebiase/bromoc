@@ -44,8 +44,12 @@ real  ang, ang0, varang, vecR(3,3)
 real  dihe, dihe0, vardihe
 real  cte1, epsln, sgex2
 real  angbond, angdih    
+real ecoul,elj
 integer nindex
 
+enonbond=0.0
+ecoul=0.0
+elj=0.0
 dener = 0.0 ! Initialization
 
 Beion = Qpar .and. j.gt.nsites
@@ -180,17 +184,22 @@ if (Qenergy) then ! total energy
           dist2 = (x(i)-xj)**2+(y(i)-yj)**2+(z(i)-zj)**2
           if (Qefpot(is)) then
             call gety(is,dist2,eefp,dist)
+            enonbond=enonbond+eefp
             dener=dener+eefp
           else
             idist2 = 1.0/dist2
             if (Qchr(is).or.Qsrpmfi(is)) idist = sqrt(idist2)
     !Lennard-Jones 6-12 potential + electrostatic interaction    
             if (Qchr(is)) then
-              dener = dener + fct(is)*idist
+              ecoul=fct(is)*idist
+              enonbond=enonbond+ecoul
+              dener = dener + ecoul
             endif
             if (Qlj(is)) then
               dist6 = (sgp2(is)*idist2)**3
-              dener  = dener + epp4(is)*dist6*(dist6-1.0)
+              elj=epp4(is)*dist6*(dist6-1.0)
+              enonbond=enonbond+elj
+              dener  = dener + elj
             endif
      !water-mediated short-range ion-ion interaction  
             if (Qsrpmfi(is)) then
@@ -200,6 +209,7 @@ if (Qenergy) then ! total energy
                 if (dist.ge.srpx) esrpmf=esrpmf*exp(-srpk*(dist-srpx))-srpy  ! smoothly fix discontinuity 
                 ! Eq. 9 W. Im,and B. Roux J. Mol. Biol. 322:851-869
                 ! (2002)
+                enonbond=enonbond+esrpmf
                 dener = dener + esrpmf
               endif
             endif  
@@ -355,16 +365,21 @@ if (Qenergy) then ! total energy
         dist2 = (x(i)-xj)**2 + (y(i)-yj)**2 + (z(i)-zj)**2    
         if (Qefpot(is)) then
           call gety(is,dist2,eefp,dist)
+          enonbond=enonbond+eefp
           dener=dener+eefp
         else
           idist2 = 1.0/dist2
           if (Qchr(is).or.Qsrpmfi(is)) idist = sqrt(idist2)
-          if (Qchr(is)) then 
-            dener = dener + fct(is)*idist
+          if (Qchr(is)) then
+            ecoul=fct(is)*idist
+            enonbond=enonbond+ecoul
+            dener = dener + ecoul
           endif
           if (Qlj(is)) then
             dist6 = (sgp2(is)*idist2)**3
-            dener = dener + epp4(is)*dist6*(dist6-1.0)
+            elj=epp4(is)*dist6*(dist6-1.0)
+            enonbond=enonbond+elj
+            dener  = dener + elj
           endif
    ! Compute Short-Range correction contribution
           if (Qsrpmfi(is)) then
@@ -406,6 +421,7 @@ if (Qenergy) then ! total energy
               if (dist.ge.srpx) esrpmfmx=esrpmfmx*exp(-srpk*(dist-srpx))-srpy  ! smoothly fix discontinuity 
                 ! Eq. 9 W. Im,and B. Roux J. Mol. Biol. 322:851-869
                 ! (2002)
+              enonbond=enonbond+esrpmfmx
               dener = dener + esrpmfmx
             endif
           endif

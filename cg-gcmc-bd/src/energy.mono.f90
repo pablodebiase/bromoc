@@ -66,6 +66,8 @@ esolv    = 0.0
 eqqmx    = 0.0
 evdwmx   = 0.0
 econ     = 0.0
+enonbond = 0.0
+eintern  = 0.0
 
 
 if (Qenergy) then
@@ -686,6 +688,8 @@ if (Qenergy) then
     enddo   ! j=1,...,nsites
   endif
 !write(*,*) 'Energy: ',egsbpb,egsbpa,evdwgd,eelec,evdw,esrpmf,esrpmfmx,ebond,eang,edihe,estack,ebp,eex,eqq,esolv,eqqmx,evdwmx,eefpot,eefpotmx,econ   ! debug
+  enonbond = eefpot + eelec + evdw + esrpmf + eefpotmx + eqqmx + evdwmx + esrpmfmx
+  eintern = ebond + eang + edihe + estack + ebp + eex + eqq + esolv + econ
   ener = ener + eelec + evdw + esrpmf + esrpmfmx + ebond + eang + edihe + estack + ebp + eex + eqq + esolv + eqqmx + evdwmx + eefpot + eefpotmx + econ
 endif                     !Qenergy
 return

@@ -1464,7 +1464,15 @@ do while (.not. logfinal)
        logrfpar = Qrfpar
        Qrfpar = .false.
      endif
-  
+     if (check(com,'all')) then
+       Qmemb = logmemb
+       Qphix = logphix
+       Qphiv = logphiv
+       Qsrpmf = logsrpmf
+       Qrfpar = logrfpar
+       Qnobond = .true.
+       Qnonbond = .true.
+     endif
      write(outu,*)
      write(outu,'(6x,a)') 'ENERGY calculation'
      write(outu,'(6x,a)') '------------------'
@@ -1477,8 +1485,17 @@ do while (.not. logfinal)
      if (Qsrpmf)   write(outu,'(6x,a)') 'Short-range Interaction Term'
      if (Qrfpar)   write(outu,'(6x,a)') 'Reaction Field Parameter Term'
   
-     call ENERGY
-     write(outu,'(6x,a,f12.6)') 'Total energy ',ener
+     Qforces=.true.
+     call energy
+     write(outu,'(6x,a,f16.8)') 'Total energy (Forces On) ',ener
+     write(outu,'(6x,a)') 'ememb, estaticf, evdwgd, erfpar, eintern, enonbond'
+     write(outu,'(6x,6(x,f16.8))') ememb,egsbpa,evdwgd,erfpar,eintern,enonbond
+     Qforces=.false.
+     call energy
+     write(outu,'(6x,a,f16.8)') 'Total energy (Forces Off) ',ener
+     write(outu,'(6x,a)') 'ememb, estaticf, evdwgd, erfpar, eintern, enonbond'
+     write(outu,'(6x,6(x,f16.8))') ememb,egsbpa,evdwgd,erfpar,eintern,enonbond
+
      Qmemb = logmemb 
      Qmmij = logmmij 
      Qphix = logphix 
@@ -1532,7 +1549,16 @@ do while (.not. logfinal)
       logrfpar = Qrfpar
       Qrfpar = .false.
     endif
-  
+    if (check(com,'allener')) then
+      Qmemb = logmemb
+      Qphix = logphix
+      Qphiv = logphiv
+      Qsrpmf = logsrpmf
+      Qrfpar = logrfpar
+      Qnobond = .true.
+      Qnonbond = .true.
+    endif
+ 
     write(outu,*)
     write(outu,'(6x,a)') 'INTERACT calculation'
     write(outu,'(6x,a)') '--------------------'         
@@ -1547,13 +1573,27 @@ do while (.not. logfinal)
   
     ! Calculate the interaction of particle "iat" with the rest of
     ! the system
-    if (iat.le.nsites) then
-      itype = typenuc(iat)
-    else 
-      itype = abs(typei(iat))
+    write(outu,'(6x,a)') 'Particle Number, Total Energy, ememb, erfpar, estaticf, evdwgd, enonbond'
+    if (check(com,'allpart')) then
+      do iat=1,nsites
+        itype = abs(typei(iat))
+        call interact(dener,x(iat),y(iat),z(iat),itype,iat,.false.)
+        write(outu,'(6x,i6,6(x,f18.6))') iat,dener,ememb,erfpar,egsbpa,evdwgd,enonbond
+      enddo
+      do iat=1+nsites,ntot
+        itype = typenuc(iat)
+        call interact(dener,x(iat),y(iat),z(iat),itype,iat,.false.)
+        write(outu,'(6x,i6,6(x,f18.6))') iat,dener,ememb,erfpar,egsbpa,evdwgd,enonbond
+      enddo
+    else
+      if (iat.le.nsites) then
+        itype = typenuc(iat)
+      else
+        itype = abs(typei(iat))
+      endif
+      call interact(dener,x(iat),y(iat),z(iat),itype,iat,.false.)
+      write(outu,'(6x,i6,6(x,f18.6))') iat,dener,ememb,erfpar,egsbpa,evdwgd,enonbond
     endif
-    call interact(dener,x(iat),y(iat),z(iat),itype,iat,.true.)
-    write(outu,'(6x,a,f12.6)') 'Interaction of particle ',iat,dener
     Qmemb = logmemb 
     Qmmij = logmmij 
     Qphix = logphix 
