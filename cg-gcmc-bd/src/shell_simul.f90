@@ -1490,6 +1490,14 @@ do while (.not. logfinal)
      write(outu,'(6x,a,f16.8)') 'Total energy (Forces On) ',ener
      write(outu,'(6x,a)') 'ememb, estaticf, evdwgd, erfpar, eintern, enonbond'
      write(outu,'(6x,6(x,f16.8))') ememb,egsbpa,evdwgd,erfpar,eintern,enonbond
+     if (check(com,'forces')) then
+       write(outu,*)
+       write(outu,'(6x,a)') '#, Force X, Force Y, Force Z'
+       do i=1,ntot
+         write(outu,'(6x,i6,3(x,f16.8))') i,fx(i),fy(i),fz(i)
+       enddo
+     endif
+     write(outu,*)
      Qforces=.false.
      call energy
      write(outu,'(6x,a,f16.8)') 'Total energy (Forces Off) ',ener
