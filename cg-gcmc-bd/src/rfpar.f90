@@ -271,12 +271,13 @@ real xi,yi,zi,ai,bi,ci,fi
 real aisign,bisign,cisign
 logical*1 ok
 
+erfpar=0.0
+
 if (j.le.nsites) return
 
 ncyz=ncly3*nclz3
 ncel3=nclx3*ncyz
 one=1.0
-erfpar=0.0
 
 
 !     Main loop by atoms

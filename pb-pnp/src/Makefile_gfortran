@@ -9,6 +9,7 @@ all : $(obj)
 
 FCOMPL = gfortran
 FFLAGC = -fPIC -mcmodel=large -O3 -march=native -ffast-math -fno-protect-parens 
+#FFLAGC = -fPIC -mcmodel=large -O0 -Wall -ffree-line-length-none -ffpe-trap=invalid,zero,overflow -fbacktrace -g -fdump-core -fcheck=all
 #FFLAGC = -C 
 CCOMPL = gcc
 CFLAGC =
