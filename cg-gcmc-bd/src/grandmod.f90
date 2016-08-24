@@ -30,7 +30,7 @@ real,external :: rndm,rndm1
 real    ikbt,ikbtdna
 real    temp,kbt,fact0n1,fact0n2,kbtdt,dnatemp,kbtdna
 real*8 runtime
-integer ntype, nold, nbuffer, ntot, natom, nfix
+integer ntype, nold, nbuffer, ntot, nfix
 
 integer typei(datom)
 real    x(datom),y(datom),z(datom)

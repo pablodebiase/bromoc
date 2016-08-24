@@ -84,7 +84,7 @@ real       conc
 !for solvent-induced contribution
 real       anumb1, epsn
 !for DNA fixed sites
-integer      isite
+integer      isite, natom
 !for DNA matrix rotation
 real       sum1, sum2, sum3
 real       xold, yold, zold
@@ -2088,7 +2088,7 @@ do while (.not. logfinal)
          do ib = 1, nbuffer
            write(outu,'(6x,a,2i4)') 'buffer---number of ions ',ib,nat(ib)
          enddo
-         write(outu,'(6x,a,i4)') 'Number of moving atoms ',natom
+         write(outu,'(6x,a,i4)') 'Number of moving ions ',ntot-nsites-nfix
        endif
      elseif (check(com,'coor')) then
        call gtipar(com,'unit',iunit,1)

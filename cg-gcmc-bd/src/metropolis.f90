@@ -28,7 +28,7 @@ integer iat, imove
 !real*16 bltz,eold, enew
 real bltz,eold, enew
 real xnew, ynew, znew
-if (natom.le.nsites) return
+if (ntot.le.nsites+nfix) return
 do imove = 1, nmcm
 
 !pick one atom and move it 

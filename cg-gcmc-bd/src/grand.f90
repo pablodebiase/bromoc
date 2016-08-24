@@ -66,7 +66,6 @@ do igrand = 1, ngcmc
         if (ntot.gt.datom) then
           call error ('grand', 'ntot is greater than datom',faterr)
         endif
-        natom = natom + 1
         x(ntot) = xnew
         y(ntot) = ynew
         z(ntot) = znew
@@ -105,7 +104,6 @@ do igrand = 1, ngcmc
         typei(iat) = typei(ntot)
         ibuffer(iat) = ibuffer(ntot)
         nat(ib) = nat(ib) - 1
-        natom = natom - 1
         ntot = ntot - 1
       endif
     endif  
