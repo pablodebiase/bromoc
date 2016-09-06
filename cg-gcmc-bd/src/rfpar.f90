@@ -55,15 +55,15 @@ use nucleotmod
 use gsbpmod
 implicit none
 
-real srfedx(ntot-nsites),srfedy(ntot-nsites),srfedz(ntot-nsites),srfe(ntot-nsites)
-real reffdx(ntot-nsites),reffdy(ntot-nsites),reffdz(ntot-nsites),reff(ntot-nsites)
-integer ncyz,ncel3,i,j,ik,jk,ix,iy,iz,n1,n2,n3,in3,ifir,itype,jtype
+real srfedx(ntot),srfedy(ntot),srfedz(ntot),srfe(ntot)
+real reffdx(ntot),reffdy(ntot),reffdz(ntot),reff(ntot)
+integer ncyz,ncel3,i,j,ix,iy,iz,n1,n2,n3,in3,ifir
 real aux1dx,aux1dy,aux1dz,gaux1
 real aux2dx,aux2dy,aux2dz,gaux2
 real aux,one,tau,de,dist2,rfdn,rfcf,aux0,aux1,aux2,aux3,srfeij,reffij
 real prefa1,prefa2
 real xi,yi,zi,ai,bi,ci,fi
-real aisign,bisign,cisign
+real aisign,bisign,cisign,ichg,jchg
 
 ncyz=ncly3*nclz3
 ncel3=nclx3*ncyz
@@ -72,16 +72,20 @@ erfpar=0.0
 srfe=0.0
 reff=0.0
 !     Main loop by atoms
-do i=nsites+1,ntot
+do i=1,ntot
+  ichg=0.0
+  if (i.gt.nsites) then
+    ichg = cg(abs(typei(i)))
+  else
+    if (namsite(i).eq.'P ') ichg = cgnuc
+  endif
+  if (ichg.eq.0.0) cycle
   if (x(i).le.xbcen3+tranx3.and.x(i).ge.xbcen3-tranx3.and. &
       y(i).le.ybcen3+trany3.and.y(i).ge.ybcen3-trany3.and. &
       z(i).le.zbcen3+tranz3.and.z(i).ge.zbcen3-tranz3) then
-    ik=i-nsites
-    itype = abs(typei(i))
-    if (Qrfpsin) then
-      ifir=0
-    else
-      ifir=(itype-nold-1)*ncel3
+    ifir=0
+    if (.not.Qrfpsin) then
+      if (i.gt.nsites) ifir=(abs(typei(i))-nold-1)*ncel3
     endif
     aux1=0.0e0
     aux1dx=0.0e0
@@ -100,7 +104,6 @@ do i=nsites+1,ntot
     if (ix.eq.nclx3-1) ix=nclx3-2
     if (iy.eq.ncly3-1) iy=ncly3-2
     if (iz.eq.nclz3-1) iz=nclz3-2
-  
     !     Calculate GB radius from 8 next neighbor grid point values    
     do n1=ix,ix+1
       ai=xi-n1*dcel3
@@ -118,14 +121,11 @@ do i=nsites+1,ntot
           in3=n1*ncyz+n2*nclz3+n3+1
           gaux1=gsrfen(in3+ifir) 
           gaux2=sqrfac*greff(in3+ifir)
-          if(gaux1.eq.0.0) exit
           prefa1=gaux1*idcel3
           prefa2=gaux2*idcel3
-          
   !     Local reaction field parameters     
           aux1=aux1+fi*gaux1
           aux2=aux2+fi*gaux2
-        
           if (Qforces) then  
   !     Local reaction field parameter derivatives     
             if ((ai.lt.(one-rsmall)).and.(ai.gt.rsmall)) then
@@ -144,84 +144,82 @@ do i=nsites+1,ntot
               aux2dz=aux2dz-aux*prefa2
             end if 
           end if   
-       
         enddo
       enddo
     enddo
-    srfe(ik)=aux1
-    reff(ik)=aux2
+    srfe(i)=aux1
+    reff(i)=aux2
     if (Qforces) then  
-      srfedx(ik)=aux1dx
-      srfedy(ik)=aux1dy
-      srfedz(ik)=aux1dz
-      reffdx(ik)=aux2dx
-      reffdy(ik)=aux2dy
-      reffdz(ik)=aux2dz            
+      srfedx(i)=aux1dx
+      srfedy(i)=aux1dy
+      srfedz(i)=aux1dz
+      reffdx(i)=aux2dx
+      reffdy(i)=aux2dy
+      reffdz(i)=aux2dz            
     endif
-    if (ik.gt.nfix) then
-      tau = celec*cg(itype)
-  
+    tau = celec*ichg
   ! self reaction field energy minus Born energy
-      aux = tau*cg(itype)*srfe(ik)
-      ! reaction field energy 
-      erfpar = erfpar + 0.5*aux*srfe(ik)
-  
+    aux = tau*ichg*srfe(i)
+    ! reaction field energy 
+    erfpar = erfpar + 0.5*aux*srfe(i)
   ! forces related to the reaction field energy                  
-      if(Qforces)then
-        ! forces caused by variation of srfe(j)
-        de = -aux
-        fx(i) = fx(i) + de*srfedx(ik)
-        fy(i) = fy(i) + de*srfedy(ik)
-        fz(i) = fz(i) + de*srfedz(ik)
-      endif
-      do j=1+nsites,i-1
-        jk=j-nsites
-        if (srfe(jk).ne.0.0) then
-          jtype = abs(typei(j))
-          dist2 = (x(j)-x(i))**2+(y(j)-y(i))**2+(z(j)-z(i))**2
-          srfeij = srfe(jk)*srfe(ik)
-          reffij = reff(jk)*reff(ik)
-          rfdn = 1.0/sqrt(reffij*reffij+dist2)
-          rfcf = reffij*rfdn
-          aux0 = tau*cg(jtype)
-          aux1 = aux0*rfcf
-          ! reaction field energy 
-          erfpar = erfpar + aux1*srfeij
-    
-          ! forces related to the reaction field energy                  
-          if(Qforces)then
-            aux2 = aux0*srfeij*rfdn**3
-            ! forces due to variation of srfe(i) and srfe(j)
-            de = -aux1*srfe(ik)
-            fx(j) = fx(j) + de*srfedx(jk)
-            fy(j) = fy(j) + de*srfedy(jk)
-            fz(j) = fz(j) + de*srfedz(jk)
-            de = -aux1*srfe(jk)
-            fx(i) = fx(i) + de*srfedx(ik)
-            fy(i) = fy(i) + de*srfedy(ik)
-            fz(i) = fz(i) + de*srfedz(ik)
-            ! forces due to variation of reff(i) and reff(j)
-            aux3=-aux2*(dist2+reff(jk)*reff(ik)*0.5)
-            de = aux3*reff(ik)
-            fx(j) = fx(j) + de*reffdx(jk)
-            fy(j) = fy(j) + de*reffdy(jk)
-            fz(j) = fz(j) + de*reffdz(jk)
-            de = aux3*reff(jk)
-            fx(i) = fx(i) + de*reffdx(ik)
-            fy(i) = fy(i) + de*reffdy(ik)
-            fz(i) = fz(i) + de*reffdz(ik)
-            ! forces due to variation of ion positions 
-            de = aux2*reffij
-            fx(j) = fx(j) + de*(x(j)-x(i))
-            fy(j) = fy(j) + de*(y(j)-y(i))
-            fz(j) = fz(j) + de*(z(j)-z(i))
-            fx(i) = fx(i) - de*(x(j)-x(i))
-            fy(i) = fy(i) - de*(y(j)-y(i))
-            fz(i) = fz(i) - de*(z(j)-z(i))
-          endif
-        endif
-      enddo
+    if(Qforces)then
+      ! forces caused by variation of srfe(j)
+      de = -aux
+      fx(i) = fx(i) + de*srfedx(i)
+      fy(i) = fy(i) + de*srfedy(i)
+      fz(i) = fz(i) + de*srfedz(i)
     endif
+    do j=1,i-1
+      jchg=0.0
+      if (j.gt.nsites) then
+        jchg = cg(abs(typei(j)))
+      else
+        if (namsite(j).eq.'P ') jchg = cgnuc
+      endif
+      if (jchg.eq.0.0) cycle
+      if (srfe(j).eq.0.0) cycle
+      dist2 = (x(j)-x(i))**2+(y(j)-y(i))**2+(z(j)-z(i))**2
+      srfeij = srfe(j)*srfe(i)
+      reffij = reff(j)*reff(i)
+      rfdn = 1.0/sqrt(reffij*reffij+dist2)
+      rfcf = reffij*rfdn
+      aux0 = tau*jchg
+      aux1 = aux0*rfcf
+      ! reaction field energy 
+      erfpar = erfpar + aux1*srfeij
+      ! forces related to the reaction field energy                  
+      if(Qforces)then
+        aux2 = aux0*srfeij*rfdn**3
+        ! forces due to variation of srfe(i) and srfe(j)
+        de = -aux1*srfe(i)
+        fx(j) = fx(j) + de*srfedx(j)
+        fy(j) = fy(j) + de*srfedy(j)
+        fz(j) = fz(j) + de*srfedz(j)
+        de = -aux1*srfe(j)
+        fx(i) = fx(i) + de*srfedx(i)
+        fy(i) = fy(i) + de*srfedy(i)
+        fz(i) = fz(i) + de*srfedz(i)
+        ! forces due to variation of reff(i) and reff(j)
+        aux3=-aux2*(dist2+reff(j)*reff(i)*0.5)
+        de = aux3*reff(i)
+        fx(j) = fx(j) + de*reffdx(j)
+        fy(j) = fy(j) + de*reffdy(j)
+        fz(j) = fz(j) + de*reffdz(j)
+        de = aux3*reff(j)
+        fx(i) = fx(i) + de*reffdx(i)
+        fy(i) = fy(i) + de*reffdy(i)
+        fz(i) = fz(i) + de*reffdz(i)
+        ! forces due to variation of ion positions 
+        de = aux2*reffij
+        fx(j) = fx(j) + de*(x(j)-x(i))
+        fy(j) = fy(j) + de*(y(j)-y(i))
+        fz(j) = fz(j) + de*(z(j)-z(i))
+        fx(i) = fx(i) - de*(x(j)-x(i))
+        fy(i) = fy(i) - de*(y(j)-y(i))
+        fz(i) = fz(i) - de*(z(j)-z(i))
+      endif
+    enddo
   endif
 enddo
 
@@ -259,47 +257,53 @@ use grandmod
 use nucleotmod
 use gsbpmod
 implicit none
-
-real srfe(ntot-nsites)
-real reff(ntot-nsites)
-integer ncyz,ncel3,i,j,ik,jk,ix,iy,iz,n1,n2,n3,in3,ifir,itype,jtype
+real srfe(ntot)
+real reff(ntot)
+integer ncyz,ncel3,i,j,ix,iy,iz,n1,n2,n3,in3,ifir,jtype
 real gaux1,gaux2,xj,yj,zj
 real one,tau,dist2,aux1,aux2,reffij
-
 real prefa1,prefa2
 real xi,yi,zi,ai,bi,ci,fi
-real aisign,bisign,cisign
+real aisign,bisign,cisign,ichg,jchg
 logical*1 ok
-
 erfpar=0.0
-
-if (j.le.nsites) return
-
 ncyz=ncly3*nclz3
 ncel3=nclx3*ncyz
 one=1.0
-
-
+jchg=0.0
+if (j.gt.nsites) then
+  jchg = cg(jtype)
+else
+  if (namsite(j).eq.'P ') jchg = cgnuc
+endif
+if (jchg.eq.0) return
 !     Main loop by atoms
 if (.not.(xj.le.xbcen3+tranx3.and.xj.ge.xbcen3-tranx3.and. &
           yj.le.ybcen3+trany3.and.yj.ge.ybcen3-trany3.and. &
           zj.le.zbcen3+tranz3.and.zj.ge.zbcen3-tranz3)) return
-
 srfe=0.0
-
-do i=nsites+1,ntot
-  ik=i-nsites
+reff=0.0
+do i=1,ntot
+  ichg=0.0
+  if (i.gt.nsites) then
+    if (i.eq.j) then 
+      ichg = cg(jtype)
+    else
+      ichg = cg(abs(typei(i)))
+    endif
+  else
+    if (namsite(i).eq.'P ') ichg = cgnuc
+  endif
+  if (ichg.eq.0.0) cycle
   aux1=0.0
   aux2=0.0
   ok=.false.
   if (i.eq.j) then
-    itype=jtype
     xi=xj+tranx3-xbcen3
     yi=yj+trany3-ybcen3
     zi=zj+tranz3-zbcen3
     ok=.true.
   else
-    itype = abs(typei(i))
     xi=x(i)+tranx3-xbcen3
     yi=y(i)+trany3-ybcen3
     zi=z(i)+tranz3-zbcen3
@@ -308,10 +312,9 @@ do i=nsites+1,ntot
        z(i).le.zbcen3+tranz3.and.z(i).ge.zbcen3-tranz3
   endif
   if (ok) then
-    if (Qrfpsin) then
-      ifir=0
-    else
-      ifir=(itype-nold-1)*ncel3
+    ifir=0
+    if (.not.Qrfpsin) then
+      if (i.gt.nsites) ifir=(abs(typei(i))-nold-1)*ncel3
     endif
     ix=int(xi*idcel3)
     iy=int(yi*idcel3)
@@ -319,7 +322,6 @@ do i=nsites+1,ntot
     if (ix.eq.nclx3-1) ix=nclx3-2
     if (iy.eq.ncly3-1) iy=ncly3-2
     if (iz.eq.nclz3-1) iz=nclz3-2
-  
     !     Calculate GB radius from 8 next neighbor grid point values    
     do n1=ix,ix+1
       ai=xi-n1*dcel3
@@ -337,7 +339,6 @@ do i=nsites+1,ntot
           in3=n1*ncyz+n2*nclz3+n3+1
           gaux1=gsrfen(in3+ifir)
           gaux2=sqrfac*greff(in3+ifir)
-          if(gaux1.eq.0.0) exit
           prefa1=gaux1*idcel3
           prefa2=gaux2*idcel3
   !     Local reaction field parameters     
@@ -347,29 +348,28 @@ do i=nsites+1,ntot
       enddo
     enddo
   endif
-  srfe(ik)=aux1
-  reff(ik)=aux2
+  srfe(i)=aux1
+  reff(i)=aux2
 enddo
-
-tau = celec*cg(jtype)
-jk=j-nsites
+tau = celec*jchg
 ! self reaction field energy minus Born energy
 ! reaction field energy 
-erfpar = erfpar + 0.5*tau*cg(jtype)*srfe(jk)**2
-
-do i=nsites+1,ntot
-  if (i.ne.j) then 
-    ik=i-nsites
-    if (srfe(ik).ne.0.0) then
-      itype = abs(typei(i))
-      dist2 = (x(i)-xj)**2+(y(i)-yj)**2+(z(i)-zj)**2
-      reffij = reff(jk)*reff(ik)
-      ! reaction field energy 
-      erfpar=erfpar+tau*cg(itype)*reffij*srfe(jk)*srfe(ik)/sqrt(reffij**2+dist2)
-    endif
+erfpar = erfpar + 0.5*tau*jchg*srfe(j)**2
+do i=1,ntot
+  if (i.eq.j) cycle
+  ichg=0.0
+  if (i.gt.nsites) then
+    ichg = cg(abs(typei(i)))
+  else
+    if (namsite(i).eq.'P ') ichg = cgnuc
   endif
+  if (ichg.eq.0.0) cycle
+  if (srfe(i).eq.0.0) cycle
+  dist2 = (x(i)-xj)**2+(y(i)-yj)**2+(z(i)-zj)**2
+  reffij = reff(j)*reff(i)
+  ! reaction field energy 
+  erfpar=erfpar+tau*ichg*reffij*srfe(j)*srfe(i)/sqrt(reffij**2+dist2)
 enddo
-
 end subroutine
   
       
@@ -402,7 +402,6 @@ use gsbpmod
 use grandmod
 use nucleotmod
 use errormod
-
 implicit none
 integer unn
 integer unitfi(unn),outu
@@ -417,7 +416,6 @@ integer i,j,k,itype,ncel3,ifir,ilas,iunit,ncel3p
 integer x1, x2, y1, y2, z1, z2, niont
 integer*4 nxo, nyo, nzo, pos, posn
 logical*1 adjust,first
-
 
 first=.true.
 if (Qrfpsin) then
