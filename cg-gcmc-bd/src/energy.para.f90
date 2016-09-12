@@ -317,15 +317,15 @@ if (Qenergy) then
         ok = Qforces .and. stfree(isite1).or.stfree(isite2).or.stfree(isite3)
         if (ok) then
           de = 1400.0*epsnuc*varang*modval/sin(ang)
-          f1=de*v1
-          f2=de*v2
+          f1 = de*(v2-m3/m1*v1)
+          f2 = de*(v1-m3/m2*v2)
           if (stfree(isite1)) then
-!            fx(isite1) = fx(isite1) + f2(1)
-!            fy(isite1) = fy(isite1) + f2(2)
-!            fz(isite1) = fz(isite1) + f2(3)
-            fxloc(isite1) = fxloc(isite1) + f2(1)
-            fyloc(isite1) = fyloc(isite1) + f2(2)
-            fzloc(isite1) = fzloc(isite1) + f2(3)
+!            fx(isite1) = fx(isite1) + f1(1)
+!            fy(isite1) = fy(isite1) + f1(2)
+!            fz(isite1) = fz(isite1) + f1(3)
+            fxloc(isite1) = fxloc(isite1) + f1(1)
+            fyloc(isite1) = fyloc(isite1) + f1(2)
+            fzloc(isite1) = fzloc(isite1) + f1(3)
           endif
           if (stfree(isite2)) then
 !            fx(isite2) = fx(isite2) - (f1(1)+f2(1))
@@ -336,12 +336,12 @@ if (Qenergy) then
             fzloc(isite2) = fzloc(isite2) - (f1(3)+f2(3))
           endif
           if (stfree(isite3)) then
-!            fx(isite3) = fx(isite3) + f1(1)
-!            fy(isite3) = fy(isite3) + f1(2)
-!            fz(isite3) = fz(isite3) + f1(3)
-            fxloc(isite3) = fxloc(isite3) + f1(1)
-            fyloc(isite3) = fyloc(isite3) + f1(2)
-            fzloc(isite3) = fzloc(isite3) + f1(3)
+!            fx(isite3) = fx(isite3) + f2(1)
+!            fy(isite3) = fy(isite3) + f2(2)
+!            fz(isite3) = fz(isite3) + f2(3)
+            fxloc(isite3) = fxloc(isite3) + f2(1)
+            fyloc(isite3) = fyloc(isite3) + f2(2)
+            fzloc(isite3) = fzloc(isite3) + f2(3)
           endif
         endif
       enddo  
